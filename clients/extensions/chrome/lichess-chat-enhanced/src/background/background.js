@@ -12,6 +12,14 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === 'FETCH_JSON') {
+    fetch(message.url)
+      .then((res) => res.json())
+      .then((data) => sendResponse(data))
+      .catch(() => sendResponse(null));
+    return true;
+  }
+
   if (message.type === 'AUTH_CHANGED') {
     // Notify all tabs that auth state changed
     chrome.tabs.query({ url: ['https://lichess.org/*', 'https://*.lichess.org/*'] }, (tabs) => {

@@ -1,3 +1,5 @@
+import lottie from 'lottie-web/build/player/lottie_light.min.js';
+
 const EMOJI_REGEX = /:([a-z0-9_-]+):/g;
 const LCE_ATTR = 'data-lce-processed';
 
@@ -72,8 +74,6 @@ function transformChatMessages(chatContent) {
 
         if (emojiData.emoji_type === 'animated') {
           span.className = 'lce-emoji lce-emoji-animated';
-          span.dataset.lottie = emojiData.image;
-          span.textContent = ':' + slug + ':'; // placeholder until lottie loads
           loadLottieEmoji(span, emojiData.image);
         } else {
           const img = document.createElement('img');
@@ -101,20 +101,22 @@ function transformChatMessages(chatContent) {
   }
 }
 
-async function loadLottieEmoji(container, url) {
-  try {
-    const lottie = await import('lottie-web/build/player/lottie_light.min.js');
-    container.textContent = '';
-    lottie.default.loadAnimation({
-      container,
-      path: url,
-      renderer: 'svg',
-      loop: true,
-      autoplay: true,
-    });
-  } catch (e) {
-    console.warn('[LCE] Lottie load failed:', e);
-  }
+function loadLottieEmoji(container, url) {
+  // Fetch the JSON via background script to avoid mixed content
+  chrome.runtime.sendMessage({ type: 'FETCH_JSON', url }, (data) => {
+    if (!data) return;
+    try {
+      lottie.loadAnimation({
+        container,
+        animationData: data,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+      });
+    } catch (e) {
+      console.warn('[LCE] Lottie render failed:', e);
+    }
+  });
 }
 
 // --- Emoji Picker UI ---
@@ -202,7 +204,7 @@ function renderPicker(chatInput) {
         img.alt = emoji.slug;
         item.appendChild(img);
       } else {
-        item.textContent = ':' + emoji.slug + ':';
+        item.textContent = '\u{1F3AC}'; // clapper emoji as placeholder for animated
       }
 
       item.addEventListener('click', () => {

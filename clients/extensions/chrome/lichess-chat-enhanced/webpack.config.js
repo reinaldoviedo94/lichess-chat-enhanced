@@ -25,6 +25,9 @@ module.exports = {
       ],
     }),
   ],
+  optimization: {
+    splitChunks: false, // No code splitting — CSP blocks dynamic chunks on Lichess
+  },
   resolve: {
     extensions: ['.js'],
   },
