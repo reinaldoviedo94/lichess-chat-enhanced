@@ -8,6 +8,8 @@ let pickerVisible = false;
 let pickerEl = null;
 let buttonEl = null;
 let initialized = false;
+let isTransforming = false;
+let transformDebounceTimer = null;
 
 // --- Catalog Loading ---
 
@@ -117,6 +119,15 @@ function loadLottieEmoji(container, url) {
       console.warn('[LCE] Lottie render failed:', e);
     }
   });
+}
+
+function safeTransform(chatContent) {
+  isTransforming = true;
+  try {
+    transformChatMessages(chatContent);
+  } finally {
+    isTransforming = false;
+  }
 }
 
 // --- Emoji Picker UI ---
@@ -241,13 +252,27 @@ function setup() {
   createPicker(chatInput);
 
   // Observe only the chat content area for new messages
-  const observer = new MutationObserver(() => {
-    transformChatMessages(chatContent);
+  const observer = new MutationObserver((mutations) => {
+    // Skip mutations caused by our own transforms or lottie animations
+    if (isTransforming) return;
+
+    const hasNewContent = mutations.some((m) =>
+      m.type === 'childList' &&
+      [...m.addedNodes].some((n) => !n.closest?.(`[${LCE_ATTR}]`) && !n.closest?.('.lce-emoji'))
+    );
+
+    if (!hasNewContent) return;
+
+    // Debounce to avoid rapid-fire transforms
+    clearTimeout(transformDebounceTimer);
+    transformDebounceTimer = setTimeout(() => {
+      safeTransform(chatContent);
+    }, 100);
   });
   observer.observe(chatContent, { childList: true, subtree: true });
 
   // Transform existing messages
-  transformChatMessages(chatContent);
+  safeTransform(chatContent);
 }
 
 // Listen for reload signal from background
@@ -260,7 +285,7 @@ chrome.runtime.onMessage.addListener((message) => {
       }
 
       const chatContent = document.querySelector('.mchat__content');
-      if (chatContent) transformChatMessages(chatContent);
+      if (chatContent) safeTransform(chatContent);
     });
   }
 });
