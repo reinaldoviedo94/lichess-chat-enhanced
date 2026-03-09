@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Auth Section -->
+  <div id="view-auth" class="view">
+    <h2>Lichess Chat Enhanced</h2>
+
+    <div id="auth-tabs">
+      <button class="tab active" data-tab="login">Login</button>
+      <button class="tab" data-tab="register">Register</button>
+    </div>
+
+    <form id="form-login" class="auth-form">
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+
+    <form id="form-register" class="auth-form hidden">
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password (min 8 chars)" required minlength="8">
+      <button type="submit">Register</button>
+    </form>
+
+    <p id="auth-error" class="error hidden"></p>
+  </div>
+
+  <!-- Logged-in Section -->
+  <div id="view-main" class="view hidden">
+    <div class="header">
+      <span id="username-display"></span>
+      <button id="btn-logout">Logout</button>
+    </div>
+
+    <div class="section">
+      <h3>My Packs</h3>
+      <div id="my-packs" class="pack-list"></div>
+    </div>
+
+    <div class="section">
+      <h3>Store</h3>
+      <div id="store-packs" class="pack-list"></div>
+    </div>
+
+    <p id="main-status" class="status hidden"></p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

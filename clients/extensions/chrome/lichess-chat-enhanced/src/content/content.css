@@ -1,0 +1,116 @@
+/* Input wrapper */
+.lce-input-wrapper {
+  position: relative;
+}
+
+/* Emoji trigger button */
+.lce-emoji-btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 2px 4px;
+  z-index: 10;
+  line-height: 1;
+}
+
+.lce-emoji-btn:hover {
+  transform: translateY(-50%) scale(1.15);
+}
+
+/* Picker container */
+.lce-picker {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  width: 280px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 8px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.lce-picker-empty {
+  color: #999;
+  text-align: center;
+  padding: 16px;
+  font-size: 13px;
+}
+
+.lce-picker-section {
+  margin-bottom: 8px;
+}
+
+.lce-picker-title {
+  font-size: 11px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 2px;
+  border-bottom: 1px solid #3a3a3a;
+  margin-bottom: 6px;
+}
+
+.lce-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+
+.lce-picker-item {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 2px;
+  transition: background 0.1s;
+}
+
+.lce-picker-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.lce-picker-item img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+/* Inline emoji in chat */
+.lce-emoji {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.lce-emoji-img {
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
+  object-fit: contain;
+}
+
+.lce-emoji-animated {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
+}
+
+.lce-emoji-animated svg {
+  width: 100%;
+  height: 100%;
+}

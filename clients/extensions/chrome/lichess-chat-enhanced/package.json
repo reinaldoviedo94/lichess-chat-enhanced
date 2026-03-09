@@ -1,13 +1,21 @@
 {
   "name": "lichess-chat-enhanced",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Custom emojis and sticker packs for Lichess chat",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "webpack --watch --mode development",
+    "build": "webpack --mode production",
+    "clean": "rm -rf dist"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.30.1"
+  "author": "Reinaldo Oviedo Linares <reinaldoviedo94@gmail.com>",
+  "packageManager": "pnpm@10.30.1",
+  "devDependencies": {
+    "copy-webpack-plugin": "^13.0.0",
+    "webpack": "^5.99.5",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "lottie-web": "^5.12.2"
+  }
 }

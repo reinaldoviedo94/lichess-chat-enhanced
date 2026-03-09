@@ -1,0 +1,169 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 320px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  color: #333;
+  padding: 16px;
+}
+
+h2 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+h3 {
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hidden { display: none !important; }
+
+/* Tabs */
+#auth-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.tab {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #ddd;
+  background: #f5f5f5;
+  cursor: pointer;
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+.tab.active {
+  background: #4a90d9;
+  color: white;
+  border-color: #4a90d9;
+}
+
+/* Forms */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth-form input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.auth-form button {
+  padding: 8px;
+  background: #4a90d9;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.auth-form button:hover { background: #3a7bc8; }
+
+.error {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+/* Main view */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+#username-display {
+  font-weight: 600;
+}
+
+#btn-logout {
+  padding: 4px 10px;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+}
+
+#btn-logout:hover { background: #f5f5f5; }
+
+.section {
+  margin-bottom: 16px;
+}
+
+.pack-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pack-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.pack-card .pack-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.pack-card .pack-name {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.pack-card .pack-count {
+  font-size: 11px;
+  color: #999;
+}
+
+.pack-card button {
+  padding: 4px 12px;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.pack-card button:hover { background: #219a52; }
+
+.pack-card .owned {
+  font-size: 11px;
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.status {
+  font-size: 12px;
+  margin-top: 8px;
+  color: #666;
+}
