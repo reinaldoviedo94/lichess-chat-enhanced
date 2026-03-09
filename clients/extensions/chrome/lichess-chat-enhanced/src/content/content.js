@@ -41,7 +41,7 @@ async function loadCatalog() {
 
 // --- Emoji Replacement in Chat ---
 
-function transformChatMessages(chatContent) {
+function transformChatMessages(chatContent, showToasts = false) {
   const walker = document.createTreeWalker(chatContent, NodeFilter.SHOW_TEXT);
   const textNodes = [];
 
@@ -86,6 +86,9 @@ function transformChatMessages(chatContent) {
         }
 
         fragment.appendChild(span);
+
+        // Show toast for new messages
+        if (showToasts) showEmojiToast(slug, emojiData);
       } else {
         // Unknown emoji, leave as text
         fragment.appendChild(document.createTextNode(match[0]));
@@ -121,10 +124,59 @@ function loadLottieEmoji(container, url) {
   });
 }
 
-function safeTransform(chatContent) {
+// --- Emoji Toast (reaction overlay) ---
+
+let toastContainer = null;
+
+function ensureToastContainer() {
+  if (toastContainer) return;
+  toastContainer = document.createElement('div');
+  toastContainer.className = 'lce-toast-container';
+  document.body.appendChild(toastContainer);
+}
+
+function showEmojiToast(slug, emojiData) {
+  ensureToastContainer();
+
+  const toast = document.createElement('div');
+  toast.className = 'lce-toast';
+
+  if (emojiData.emoji_type === 'animated') {
+    toast.className = 'lce-toast lce-toast-lottie';
+    chrome.runtime.sendMessage({ type: 'FETCH_JSON', url: emojiData.image }, (data) => {
+      if (!data) return;
+      try {
+        const anim = lottie.loadAnimation({
+          container: toast,
+          animationData: data,
+          renderer: 'svg',
+          loop: true,
+          autoplay: true,
+        });
+        // Destroy lottie instance on removal
+        toast.addEventListener('animationend', () => anim.destroy());
+      } catch (e) { /* ignore */ }
+    });
+  } else {
+    const img = document.createElement('img');
+    img.src = emojiData.image;
+    img.alt = slug;
+    toast.appendChild(img);
+  }
+
+  toastContainer.appendChild(toast);
+
+  // Trigger fade-out after 3s, remove after animation ends
+  setTimeout(() => {
+    toast.classList.add('lce-toast-out');
+    toast.addEventListener('animationend', () => toast.remove());
+  }, 3000);
+}
+
+function safeTransform(chatContent, showToasts = false) {
   isTransforming = true;
   try {
-    transformChatMessages(chatContent);
+    transformChatMessages(chatContent, showToasts);
   } finally {
     isTransforming = false;
   }
@@ -266,7 +318,7 @@ function setup() {
     // Debounce to avoid rapid-fire transforms
     clearTimeout(transformDebounceTimer);
     transformDebounceTimer = setTimeout(() => {
-      safeTransform(chatContent);
+      safeTransform(chatContent, true);
     }, 100);
   });
   observer.observe(chatContent, { childList: true, subtree: true });

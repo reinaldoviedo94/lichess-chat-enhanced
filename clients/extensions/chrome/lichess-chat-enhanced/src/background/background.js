@@ -30,6 +30,37 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 });
 
+// Convert an image URL to a data URI (avoids mixed content on HTTPS pages)
+async function toDataUri(url) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = () => resolve(url); // fallback to original URL
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return url; // fallback
+  }
+}
+
+async function convertPackImages(packs) {
+  for (const pack of packs) {
+    if (!pack.emojis) continue;
+    await Promise.all(
+      pack.emojis.map(async (emoji) => {
+        if (emoji.emoji_type === 'static' && emoji.image) {
+          emoji.image = await toDataUri(emoji.image);
+        }
+        // Animated (Lottie) URLs stay as-is — fetched via FETCH_JSON
+      }),
+    );
+  }
+  return packs;
+}
+
 async function loadCatalog() {
   try {
     const freePacks = await api.getFreePacks();
@@ -40,6 +71,9 @@ async function loadCatalog() {
       const myPacksResponse = await api.getMyPacks();
       userPacks = myPacksResponse.map((up) => up.pack);
     }
+
+    // Pre-fetch static images as data URIs to avoid mixed content
+    await Promise.all([convertPackImages(freePacks), convertPackImages(userPacks)]);
 
     return { freePacks, userPacks };
   } catch (e) {
