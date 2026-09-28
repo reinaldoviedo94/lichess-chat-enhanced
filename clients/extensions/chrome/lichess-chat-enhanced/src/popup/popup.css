@@ -1,3 +1,7 @@
+@import './tokens.css';
+
+/* Todo color, radio, espaciado y tamaño sale de docs/design/tokens.json. */
+
 * {
   margin: 0;
   padding: 0;
@@ -6,22 +10,23 @@
 
 body {
   width: 320px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 14px;
-  color: #333;
-  padding: 16px;
+  font-family: var(--lce-font-family);
+  font-size: var(--lce-font-size-md);
+  color: var(--lce-color-foreground);
+  background: var(--lce-color-background);
+  padding: var(--lce-space-5);
 }
 
 h2 {
-  font-size: 16px;
-  margin-bottom: 12px;
+  font-size: var(--lce-font-size-lg);
+  margin-bottom: var(--lce-space-4);
   text-align: center;
 }
 
 h3 {
-  font-size: 13px;
-  margin-bottom: 8px;
-  color: #666;
+  font-size: var(--lce-font-size-sm);
+  margin-bottom: var(--lce-space-3);
+  color: var(--lce-color-muted-foreground);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -31,56 +36,73 @@ h3 {
 /* Tabs */
 #auth-tabs {
   display: flex;
-  gap: 4px;
-  margin-bottom: 12px;
+  gap: var(--lce-space-2);
+  margin-bottom: var(--lce-space-4);
 }
 
 .tab {
   flex: 1;
-  padding: 6px;
-  border: 1px solid #ddd;
-  background: #f5f5f5;
+  padding: var(--lce-space-3);
+  border: 1px solid var(--lce-color-border);
+  background: var(--lce-color-surface-sunken);
+  color: var(--lce-color-muted-foreground);
   cursor: pointer;
-  font-size: 13px;
-  border-radius: 4px;
+  font-family: inherit;
+  font-size: var(--lce-font-size-sm);
+  border-radius: var(--lce-radius-md);
+  transition: background var(--lce-motion-fast) var(--lce-motion-ease);
 }
 
+.tab:hover { background: var(--lce-color-hover); }
+
 .tab.active {
-  background: #4a90d9;
-  color: white;
-  border-color: #4a90d9;
+  background: var(--lce-color-primary);
+  color: var(--lce-color-on-primary);
+  border-color: var(--lce-color-primary);
+}
+
+.tab:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--lce-color-ring);
+  outline-offset: 2px;
 }
 
 /* Forms */
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--lce-space-3);
 }
 
 .auth-form input {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 13px;
+  padding: var(--lce-space-3);
+  border: 1px solid var(--lce-color-border);
+  border-radius: var(--lce-radius-md);
+  background: var(--lce-color-input);
+  color: var(--lce-color-foreground);
+  font-family: inherit;
+  font-size: var(--lce-font-size-sm);
 }
 
 .auth-form button {
-  padding: 8px;
-  background: #4a90d9;
-  color: white;
+  padding: var(--lce-space-3);
+  background: var(--lce-color-primary);
+  color: var(--lce-color-on-primary);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--lce-radius-md);
   cursor: pointer;
-  font-size: 13px;
+  font-family: inherit;
+  font-size: var(--lce-font-size-sm);
+  transition: background var(--lce-motion-fast) var(--lce-motion-ease);
 }
 
-.auth-form button:hover { background: #3a7bc8; }
+.auth-form button:hover { background: var(--lce-color-primary-strong); }
 
 .error {
-  color: #e74c3c;
-  font-size: 12px;
-  margin-top: 8px;
+  color: var(--lce-color-destructive);
+  font-size: var(--lce-font-size-xs);
+  margin-top: var(--lce-space-3);
 }
 
 /* Main view */
@@ -88,45 +110,47 @@ h3 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: var(--lce-space-5);
+  padding-bottom: var(--lce-space-3);
+  border-bottom: 1px solid var(--lce-color-border);
 }
 
 #username-display {
-  font-weight: 600;
+  font-weight: var(--lce-font-weight-medium);
 }
 
 #btn-logout {
-  padding: 4px 10px;
+  padding: var(--lce-space-2) var(--lce-space-4);
   background: none;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px solid var(--lce-color-border);
+  border-radius: var(--lce-radius-md);
   cursor: pointer;
-  font-size: 12px;
-  color: #666;
+  font-family: inherit;
+  font-size: var(--lce-font-size-xs);
+  color: var(--lce-color-muted-foreground);
+  transition: background var(--lce-motion-fast) var(--lce-motion-ease);
 }
 
-#btn-logout:hover { background: #f5f5f5; }
+#btn-logout:hover { background: var(--lce-color-hover); }
 
 .section {
-  margin-bottom: 16px;
+  margin-bottom: var(--lce-space-5);
 }
 
 .pack-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--lce-space-2);
 }
 
 .pack-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px;
-  border: 1px solid #eee;
-  border-radius: 6px;
-  background: #fafafa;
+  padding: var(--lce-space-3);
+  border: 1px solid var(--lce-color-border);
+  border-radius: var(--lce-radius-md);
+  background: var(--lce-color-surface-sunken);
 }
 
 .pack-card .pack-info {
@@ -135,35 +159,37 @@ h3 {
 }
 
 .pack-card .pack-name {
-  font-weight: 600;
-  font-size: 13px;
+  font-weight: var(--lce-font-weight-medium);
+  font-size: var(--lce-font-size-sm);
 }
 
 .pack-card .pack-count {
-  font-size: 11px;
-  color: #999;
+  font-size: var(--lce-font-size-xs);
+  color: var(--lce-color-muted-foreground);
 }
 
 .pack-card button {
-  padding: 4px 12px;
-  background: #27ae60;
-  color: white;
+  padding: var(--lce-space-2) var(--lce-space-4);
+  background: var(--lce-color-primary);
+  color: var(--lce-color-on-primary);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--lce-radius-md);
   cursor: pointer;
-  font-size: 12px;
+  font-family: inherit;
+  font-size: var(--lce-font-size-xs);
+  transition: background var(--lce-motion-fast) var(--lce-motion-ease);
 }
 
-.pack-card button:hover { background: #219a52; }
+.pack-card button:hover { background: var(--lce-color-primary-strong); }
 
 .pack-card .owned {
-  font-size: 11px;
-  color: #27ae60;
-  font-weight: 600;
+  font-size: var(--lce-font-size-xs);
+  color: var(--lce-color-primary);
+  font-weight: var(--lce-font-weight-medium);
 }
 
 .status {
-  font-size: 12px;
-  margin-top: 8px;
-  color: #666;
+  font-size: var(--lce-font-size-xs);
+  margin-top: var(--lce-space-3);
+  color: var(--lce-color-muted-foreground);
 }

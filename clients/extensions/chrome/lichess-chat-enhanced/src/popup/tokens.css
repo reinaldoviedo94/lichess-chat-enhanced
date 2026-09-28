@@ -1,0 +1,149 @@
+/* Generado por scripts/tokens-to-css.mjs desde docs/design/tokens.json.
+ * NO EDITAR A MANO: editá tokens.json y volvé a correr el generador. */
+
+:root {
+  /* color */
+  --lce-color-background: #FFFFFF;
+  --lce-color-foreground: #111B21;
+  --lce-color-muted: #F0F2F5;
+  --lce-color-muted-foreground: #667781;
+  --lce-color-surface: #FFFFFF;
+  --lce-color-surface-raised: #FFFFFF;
+  --lce-color-surface-sunken: #F0F2F5;
+  --lce-color-on-surface: #111B21;
+  --lce-color-border: #D1D7DB;
+  --lce-color-border-strong: #B0B7BD;
+  --lce-color-input: #FFFFFF;
+  --lce-color-primary: #00A884;
+  --lce-color-primary-strong: #008069;
+  --lce-color-on-primary: #FFFFFF;
+  --lce-color-accent: #DCF8C6;
+  --lce-color-on-accent: #111B21;
+  --lce-color-destructive: #D32F2F;
+  --lce-color-on-destructive: #FFFFFF;
+  --lce-color-ring: #00A884;
+  --lce-color-bubble-in: #FFFFFF;
+  --lce-color-bubble-out: #DCF8C6;
+  --lce-color-chat-canvas: #ECE5DD;
+  --lce-color-hover: rgba(17, 27, 33, 0.06);
+  --lce-color-active: rgba(17, 27, 33, 0.12);
+  --lce-color-overlay: rgba(11, 20, 26, 0.45);
+  --lce-color-shadow-color: rgba(11, 20, 26, 0.18);
+  /* radius */
+  --lce-radius-sm: 4px;
+  --lce-radius-md: 8px;
+  --lce-radius-lg: 12px;
+  --lce-radius-xl: 16px;
+  --lce-radius-full: 9999px;
+  /* space */
+  --lce-space-1: 2px;
+  --lce-space-2: 4px;
+  --lce-space-3: 8px;
+  --lce-space-4: 12px;
+  --lce-space-5: 16px;
+  --lce-space-6: 20px;
+  --lce-space-7: 24px;
+  /* size */
+  --lce-size-trigger: 22px;
+  --lce-size-item: 36px;
+  --lce-size-item-image: 28px;
+  --lce-size-inline-emoji: 22px;
+  --lce-size-toast: 80px;
+  --lce-size-toast-image: 56px;
+  --lce-size-panel-width: 320px;
+  --lce-size-panel-max-height: 360px;
+  /* font */
+  --lce-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --lce-font-size-xs: 11px;
+  --lce-font-size-sm: 13px;
+  --lce-font-size-md: 14px;
+  --lce-font-size-lg: 16px;
+  --lce-font-weight-normal: 400;
+  --lce-font-weight-medium: 600;
+  /* shadow */
+  --lce-shadow-panel: 0 12px 28px rgba(11, 20, 26, 0.18);
+  --lce-shadow-toast: 0 4px 12px rgba(11, 20, 26, 0.24);
+  /* z */
+  --lce-z-trigger: 10;
+  --lce-z-panel: 1000;
+  --lce-z-toast: 9999;
+  /* motion */
+  --lce-motion-fast: 100ms;
+  --lce-motion-base: 180ms;
+  --lce-motion-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --lce-motion-ease: cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+body.dark, body[data-lce-theme='dark'] {
+  /* color */
+  --lce-color-background: #111B21;
+  --lce-color-foreground: #E9EDEF;
+  --lce-color-muted: #202C33;
+  --lce-color-muted-foreground: #8696A0;
+  --lce-color-surface: #111B21;
+  --lce-color-surface-raised: #202C33;
+  --lce-color-surface-sunken: #0B141A;
+  --lce-color-on-surface: #E9EDEF;
+  --lce-color-border: #2A3942;
+  --lce-color-border-strong: #3B4A54;
+  --lce-color-input: #2A3942;
+  --lce-color-primary: #00A884;
+  --lce-color-primary-strong: #005C4B;
+  --lce-color-on-primary: #0B141A;
+  --lce-color-accent: #005C4B;
+  --lce-color-on-accent: #E9EDEF;
+  --lce-color-destructive: #F15C6D;
+  --lce-color-on-destructive: #0B141A;
+  --lce-color-ring: #00A884;
+  --lce-color-bubble-in: #202C33;
+  --lce-color-bubble-out: #005C4B;
+  --lce-color-chat-canvas: #0B141A;
+  --lce-color-hover: rgba(233, 237, 239, 0.08);
+  --lce-color-active: rgba(233, 237, 239, 0.16);
+  --lce-color-overlay: rgba(11, 20, 26, 0.6);
+  --lce-color-shadow-color: rgba(0, 0, 0, 0.5);
+  /* radius */
+  --lce-radius-sm: 4px;
+  --lce-radius-md: 8px;
+  --lce-radius-lg: 12px;
+  --lce-radius-xl: 16px;
+  --lce-radius-full: 9999px;
+  /* space */
+  --lce-space-1: 2px;
+  --lce-space-2: 4px;
+  --lce-space-3: 8px;
+  --lce-space-4: 12px;
+  --lce-space-5: 16px;
+  --lce-space-6: 20px;
+  --lce-space-7: 24px;
+  /* size */
+  --lce-size-trigger: 22px;
+  --lce-size-item: 36px;
+  --lce-size-item-image: 28px;
+  --lce-size-inline-emoji: 22px;
+  --lce-size-toast: 80px;
+  --lce-size-toast-image: 56px;
+  --lce-size-panel-width: 320px;
+  --lce-size-panel-max-height: 360px;
+  /* font */
+  --lce-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --lce-font-size-xs: 11px;
+  --lce-font-size-sm: 13px;
+  --lce-font-size-md: 14px;
+  --lce-font-size-lg: 16px;
+  --lce-font-weight-normal: 400;
+  --lce-font-weight-medium: 600;
+  /* shadow */
+  --lce-shadow-panel: 0 12px 28px rgba(0, 0, 0, 0.5);
+  --lce-shadow-toast: 0 4px 12px rgba(0, 0, 0, 0.5);
+  /* z */
+  --lce-z-trigger: 10;
+  --lce-z-panel: 1000;
+  --lce-z-toast: 9999;
+  /* motion */
+  --lce-motion-fast: 100ms;
+  --lce-motion-base: 180ms;
+  --lce-motion-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --lce-motion-ease: cubic-bezier(0.2, 0, 0.2, 1);
+}
+
