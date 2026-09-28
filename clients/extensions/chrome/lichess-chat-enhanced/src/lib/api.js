@@ -1,4 +1,11 @@
-const API_BASE = 'http://127.0.0.1:8000/api';
+import { createAuthFetch } from './authFetch.mjs';
+
+// Horneado por webpack.DefinePlugin en build-time. En local (sin definir) cae al
+// backend de desarrollo; en CI/CD llega desde el secret API_BASE. El guard
+// typeof× permite leer el fuente también fuera de webpack (p. ej. en node).
+const API_BASE =
+  (typeof __LCE_API_BASE__ !== 'undefined' && __LCE_API_BASE__) ||
+  'http://127.0.0.1:8000/api';
 
 async function getTokens() {
   const data = await chrome.storage.local.get(['accessToken', 'refreshToken']);
@@ -16,50 +23,15 @@ async function clearTokens() {
   await chrome.storage.local.remove(['accessToken', 'refreshToken']);
 }
 
-async function refreshAccessToken() {
-  const { refreshToken } = await getTokens();
-  if (!refreshToken) return null;
-
-  const res = await fetch(`${API_BASE}/auth/token/refresh/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refresh: refreshToken }),
-  });
-
-  if (!res.ok) {
-    await clearTokens();
-    return null;
-  }
-
-  const data = await res.json();
-  await saveTokens(data.access, data.refresh || refreshToken);
-  return data.access;
-}
-
-async function authFetch(url, options = {}) {
-  let { accessToken } = await getTokens();
-
-  const doFetch = (token) =>
-    fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-
-  let res = await doFetch(accessToken);
-
-  if (res.status === 401 && accessToken) {
-    const newToken = await refreshAccessToken();
-    if (newToken) {
-      res = await doFetch(newToken);
-    }
-  }
-
-  return res;
-}
+// authFetch se construye con la inyección real (chrome.storage + fetch global).
+// La lógica vive en authFetch.mjs y es testeable en node con fakes.
+const authFetch = createAuthFetch({
+  getTokens,
+  saveTokens,
+  clearTokens,
+  refreshUrl: `${API_BASE}/auth/token/refresh/`,
+  fetchImpl: fetch,
+});
 
 export const api = {
   async register(email, username, password) {

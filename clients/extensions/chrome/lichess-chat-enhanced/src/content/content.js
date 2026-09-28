@@ -1,6 +1,6 @@
 import lottie from 'lottie-web/build/player/lottie_light.min.js';
+import { tokenizeEmoji } from '../lib/emojiTokenize.mjs';
 
-const EMOJI_REGEX = /:([a-z0-9_-]+):/g;
 const LCE_ATTR = 'data-lce-processed';
 
 let emojiMap = {}; // slug -> { image, emoji_type, pack_slug }
@@ -59,54 +59,41 @@ function transformChatMessages(chatContent, showToasts = false) {
   }
 
   for (const textNode of textNodes) {
-    if (!EMOJI_REGEX.test(textNode.nodeValue)) continue;
-    EMOJI_REGEX.lastIndex = 0;
+    const source = textNode.nodeValue;
+    // Lógica pura de tokenización (ver src/lib/emojiTokenize.mjs). Un regex local por llamada
+    // mata el bug del `lastIndex` compartido que teníamos con el global.
+    const parts = tokenizeEmoji(source, emojiMap);
+    if (!parts.some((part) => part.type === 'emoji')) continue;
 
     const fragment = document.createDocumentFragment();
-    let lastIndex = 0;
-    let match;
-
-    while ((match = EMOJI_REGEX.exec(textNode.nodeValue)) !== null) {
-      const slug = match[1];
-      const emojiData = emojiMap[slug];
-
-      // Add text before match
-      if (match.index > lastIndex) {
-        fragment.appendChild(document.createTextNode(textNode.nodeValue.slice(lastIndex, match.index)));
+    for (const part of parts) {
+      if (part.type === 'text') {
+        fragment.appendChild(document.createTextNode(part.text));
+        continue;
       }
 
-      if (emojiData) {
+      if (part.data) {
         const span = document.createElement('span');
         span.setAttribute(LCE_ATTR, '1');
-        span.className = 'lce-emoji';
-        span.title = `:${slug}:`;
+        span.className = 'lce-emoji' + (part.data.emoji_type === 'animated' ? ' lce-emoji-animated' : '');
+        span.title = `:${part.slug}:`;
 
-        if (emojiData.emoji_type === 'animated') {
-          span.className = 'lce-emoji lce-emoji-animated';
-          loadLottieEmoji(span, emojiData.image);
+        if (part.data.emoji_type === 'animated') {
+          loadLottieEmoji(span, part.data.image);
         } else {
           const img = document.createElement('img');
-          img.src = emojiData.image;
-          img.alt = slug;
+          img.src = part.data.image;
+          img.alt = part.slug;
           img.className = 'lce-emoji-img';
           span.appendChild(img);
         }
 
         fragment.appendChild(span);
-
-        // Show toast for new messages
-        if (showToasts) showEmojiToast(slug, emojiData);
+        if (showToasts) showEmojiToast(part.slug, part.data);
       } else {
-        // Unknown emoji, leave as text
-        fragment.appendChild(document.createTextNode(match[0]));
+        // emoticono desconocido: se deja como texto literal `:slug:`.
+        fragment.appendChild(document.createTextNode(`:${part.slug}:`));
       }
-
-      lastIndex = match.index + match[0].length;
-    }
-
-    // Add remaining text
-    if (lastIndex < textNode.nodeValue.length) {
-      fragment.appendChild(document.createTextNode(textNode.nodeValue.slice(lastIndex)));
     }
 
     textNode.parentNode.replaceChild(fragment, textNode);
