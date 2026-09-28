@@ -26,10 +26,6 @@ jobs:
         with:
           node-version: '24'
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
       - name: Resolve extension version from the manifest
         id: version
         working-directory: ${{ env.EXTENSION_DIR }}
@@ -54,6 +50,22 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:${{ github.sha }}
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Install extension dependencies
         working-directory: ${{ env.EXTENSION_DIR }}
         run: pnpm install --frozen-lockfile
@@ -62,9 +74,11 @@ jobs:
         working-directory: ${{ env.EXTENSION_DIR }}
         run: pnpm build
 
+      # Built here rather than in the build job on purpose: each job gets its
+      # own runner, so a zip produced in one job does not exist in the next.
       # The zip plus the manifest: Django reads the manifest to report the real
       # extension version and refuses to advertise a bundle it cannot find.
-      # Zipped from inside dist/ so manifest.json lands at the archive root —
+      # Zipped from inside dist/ so manifest.json lands at the archive root --
       # Chrome's "load unpacked" needs manifest.json in the chosen folder, and
       # making users click into a nested dist/ is a support ticket waiting to
       # happen.
@@ -78,14 +92,6 @@ jobs:
           cp dist/manifest.json /tmp/manifest.json
           echo "zip: $(du -h /tmp/lichess-chat-enhanced.zip | cut -f1)"
           unzip -l /tmp/lichess-chat-enhanced.zip | head -4
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - uses: actions/checkout@v4
 
       - uses: appleboy/scp-action@v1
         with:
