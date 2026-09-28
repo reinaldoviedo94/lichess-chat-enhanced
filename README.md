@@ -4,23 +4,31 @@ Extensión de Chrome (MV3) + servicio Django que agrega **emojis y packs de stic
 
 - **URL del diagrama (verdad canónica):** <https://reinaldoviedo94.github.io/lichess-chat-enhanced/architecture.html>
 - **Spec del diagrama:** [`docs/architecture.json`](docs/architecture.json)
+- **Índice de los dos diagramas:** <https://reinaldoviedo94.github.io/lichess-chat-enhanced/>
+
+Hay dos diagramas, con el mismo nivel de autoridad:
+
+| Diagrama | Responde a |
+|---|---|
+| [Arquitectura](https://reinaldoviedo94.github.io/lichess-chat-enhanced/architecture.html) | Cómo se compone el sistema en ejecución: extensión, service worker, API, auth, almacenamiento. |
+| [Cómo se verifica un cambio](https://reinaldoviedo94.github.io/lichess-chat-enhanced/verification.html) | Del `src` a la comprobación: build, seed, API local, harness, y qué bloquea hoy la vía automatizada. |
 
 ---
 
 ## La verdad del sistema
 
-> **El diagrama de `docs/architecture.html` es la fuente canónica de arquitectura de este repo.**
-> Si el diagrama y el código discrepan, hay un bug: se arregla el código o se regenera el diagrama, pero nunca se deja la divergencia sin resolver.
+> **Los diagramas de `docs/` son la fuente canónica de arquitectura de este repo.**
+> Si un diagrama y el código discrepan, hay un bug: se arregla el código o se regenera el diagrama, pero nunca se deja la divergencia sin resolver.
 
-El diagrama no es una ilustración decorativa. Cada nodo declara evidencia con `sources` (ruta y línea reales del repo) y `meta.repository.revision` fija el commit del que se trazó, así que Archify **verifica las referencias contra el checkout** antes de renderizar. Si mueves un endpoint, cambias un nombre de archivo o alteras el flujo, la validación falla y te obliga a actualizar el spec.
+Los diagramas no son ilustraciones decorativas. Cada componente declara evidencia con `sources` (ruta y línea reales del repo) y `meta.repository.revision` fija el commit del que se trazó, así que Archify **verifica las referencias contra el checkout** antes de renderizar. Si mueves un endpoint, cambias un nombre de archivo o alteras el flujo, la validación falla y te obliga a actualizar el spec.
 
-**Regla: si tocas código que aparece en el diagrama, regenera el diagrama en el mismo PR.**
+**Regla: si tocas código que aparece en un diagrama, regeneras el diagrama en el mismo PR.**
 
-### Cómo verlo
+### Cómo verlos
 
 ```bash
-# Online (después de mergear en develop, el workflow lo publica solo)
-open https://reinaldoviedo94.github.io/lichess-chat-enhanced/architecture.html
+# Online
+open https://reinaldoviedo94.github.io/lichess-chat-enhanced/
 
 # Local, servido en http://127.0.0.1:8848
 ./docs/serve.sh
@@ -51,6 +59,8 @@ node $SKILL/bin/archify.mjs visual-check $HTML --json
 `deliver` imprime el SHA-256 y los bytes del spec y del artefacto. `visual-check` deja receipts en `docs/architecture.visual-check.*` (ignorados por git a propósito: son evidencia de una sesión, no fuente).
 
 Al regenerar, **actualiza a mano `meta.repository.revision`** con el SHA completo del commit que documentas.
+
+Comprobado en esta sesión: el `viewBox` manda en la legibilidad a 1440px (el subtexto de 9px necesita escala ≥ 0,667, así que el ancho del viewBox no puede pasar de ~1390) y `visual-check` puede reprobar por unos pocos píxeles de overflow vertical que `validate` no detecta. Hay que iterar con los dos, no solo con `validate`.
 
 ---
 

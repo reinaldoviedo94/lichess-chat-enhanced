@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Cómo se verifica un cambio",
+    "quality_profile": "showcase",
+    "viewBox": [1260, 470],
+    "repository": {
+      "url": "https://github.com/reinaldoviedo94/lichess-chat-enhanced",
+      "provider": "github",
+      "revision": "b563c8e76026aa9f8b42c0c387e97ba8ee3f0067"
+    },
+    "views": [
+      {
+        "id": "main-path",
+        "label": "Ruta principal",
+        "focus": ["src", "build", "chrome", "content", "assert"],
+        "note": "Del cambio en el código a la comprobación, sin desvíos."
+      },
+      {
+        "id": "data-and-harness",
+        "label": "Datos y harness",
+        "focus": ["seed", "api", "harness"],
+        "note": "De dónde salen los emojis y qué DOM se le opone al content script."
+      },
+      {
+        "id": "blocked-path",
+        "label": "Vía bloqueada",
+        "focus": ["blocked", "assert"],
+        "note": "Qué es lo que hoy impide la verificación automatizada."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "src",
+      "type": "frontend",
+      "label": "Cambio en src",
+      "sublabel": "content.js o views.py",
+      "sources": [{ "path": "clients/extensions/chrome/lichess-chat-enhanced/src/content/content.js" }],
+      "pos": [30, 60],
+      "size": [150, 70]
+    },
+    {
+      "id": "build",
+      "type": "backend",
+      "label": "pnpm build",
+      "sublabel": "webpack → dist/",
+      "sources": [{ "path": "clients/extensions/chrome/lichess-chat-enhanced/package.json", "line": 7 }],
+      "pos": [250, 60],
+      "size": [150, 70]
+    },
+    {
+      "id": "chrome",
+      "type": "frontend",
+      "label": "Chrome",
+      "sublabel": "extensión sin empaquetar",
+      "sources": [{ "path": "clients/extensions/chrome/lichess-chat-enhanced/manifest.json", "line": 2 }],
+      "pos": [500, 60],
+      "size": [150, 70]
+    },
+    {
+      "id": "content",
+      "type": "frontend",
+      "label": "Content script",
+      "sublabel": "data URI + Lottie",
+      "sources": [{ "path": "clients/extensions/chrome/lichess-chat-enhanced/src/content/content.js", "line": 44 }],
+      "pos": [780, 60],
+      "size": [150, 70]
+    },
+    {
+      "id": "assert",
+      "type": "security",
+      "label": "Comprobar",
+      "sublabel": "run.mjs o a mano",
+      "sources": [{ "path": "clients/extensions/chrome/lichess-chat-enhanced/e2e/run.mjs", "line": 1 }],
+      "pos": [1060, 60],
+      "size": [150, 70]
+    },
+    {
+      "id": "seed",
+      "type": "backend",
+      "label": "seed_demo_packs",
+      "sublabel": "smileys + chess-plus",
+      "sources": [{ "path": "services/lichess_chat_enhanced/emojis/management/commands/seed_demo_packs.py", "line": 12 }],
+      "pos": [250, 220],
+      "size": [150, 70]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Django local",
+      "sublabel": "127.0.0.1:8000",
+      "sources": [{ "path": "services/lichess_chat_enhanced/lichess_chat_enhanced/settings.py", "line": 88 }],
+      "pos": [500, 220],
+      "size": [150, 70]
+    },
+    {
+      "id": "harness",
+      "type": "frontend",
+      "label": "Harness",
+      "sublabel": "DOM de lila en :8849",
+      "sources": [{ "path": "clients/extensions/chrome/lichess-chat-enhanced/e2e/harness/index.html", "line": 25 }],
+      "pos": [780, 220],
+      "size": [150, 70]
+    },
+    {
+      "id": "blocked",
+      "type": "security",
+      "label": "run.mjs = 3",
+      "sublabel": "sin worker MV3",
+      "sources": [{ "path": "clients/extensions/chrome/lichess-chat-enhanced/e2e/README.md", "line": 60 }],
+      "pos": [1060, 220],
+      "size": [150, 70]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Vía automatizada",
+      "wraps": ["src", "build", "chrome", "content", "assert"],
+      "pad": 22
+    },
+    {
+      "kind": "security-group",
+      "label": "Entradas y bloqueo",
+      "wraps": ["seed", "api", "harness", "blocked"],
+      "pad": 22
+    }
+  ],
+  "connections": [
+    { "id": "src-build", "from": "src", "to": "build", "label": "editar" },
+    { "id": "build-chrome", "from": "build", "to": "chrome", "label": "cargar dist/" },
+    { "id": "chrome-content", "from": "chrome", "to": "content", "label": "document_idle" },
+    { "id": "content-assert", "from": "content", "to": "assert", "label": "img + svg", "variant": "emphasis" },
+    { "id": "seed-api", "from": "seed", "to": "api", "label": "emojis" },
+    { "id": "api-content", "from": "api", "to": "content", "label": "catálogo" },
+    { "id": "harness-content", "from": "harness", "to": "content", "label": "mensajes" },
+    { "id": "blocked-assert", "from": "blocked", "to": "assert", "label": "solo manual", "variant": "dashed" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "El harness replica lila, no lo inventa",
+      "items": [
+        "section.mchat, .mchat__content, ol.mchat__messages e input.mchat__say",
+        "window.__receive simula la llegada de un mensaje: solo así se dispara el observer"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Lo que hoy no es verde",
+      "items": [
+        "Playwright no expone el service worker MV3 de una extensión sin empaquetar",
+        "run.mjs sale con código 3 e imprime el procedimiento manual, nunca un verde falso"
+      ]
+    }
+  ]
+}

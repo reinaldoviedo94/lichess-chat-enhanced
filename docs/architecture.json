@@ -6,12 +6,12 @@
     "quality_profile": "showcase",
     "viewBox": [
       1260,
-      640
+      612
     ],
     "repository": {
       "url": "https://github.com/reinaldoviedo94/lichess-chat-enhanced",
       "provider": "github",
-      "revision": "5f2f9ca4c3fa9416f4a877220e8a8a7ff5494377"
+      "revision": "b563c8e76026aa9f8b42c0c387e97ba8ee3f0067"
     },
     "views": [
       {
@@ -368,20 +368,22 @@
   "cards": [
     {
       "dot": "cyan",
-      "title": "Estado actual (commit 5f2f9ca)",
+      "title": "Estado real (b563c8e)",
       "items": [
-        "Solo backend + extensión: sin tests, sin README, sin CI",
-        "Adquirir pack es gratis: no hay pagos implementados",
-        "DEBUG=True, SECRET_KEY en el repo y CORS_ALLOW_ALL_ORIGINS=True"
+        "Backend solo en local: sin imagen de contenedor ni despliegue",
+        "Adquirir un pack es gratis: no hay pagos",
+        "DEBUG=True, SECRET_KEY en el repo, CORS abierto",
+        "Hay harness e2e, pero Playwright no carga la extensión"
       ]
     },
     {
       "dot": "amber",
-      "title": "Dónde mirar al retomar",
+      "title": "Por qué el chat no siempre aparece",
       "items": [
-        "Las imágenes estáticas se convierten a data URI por el mixed content HTTPS",
-        "Los Lottie animados se piden como JSON al service worker",
-        "El refresh del access token vive solo en el cliente (sin blacklist)"
+        "hasChat: ni torneo, ni simul, ni swiss, ni IA",
+        "Los dos deben estar logueados; anónimo solo ve presets",
+        "mchat__say es input con maxlength 140, no textarea",
+        "PNG a data URI; Lottie como JSON vía service worker"
       ]
     }
   ]
