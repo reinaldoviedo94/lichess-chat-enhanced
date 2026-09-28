@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    # develop es la rama activa del repo (deploy también corre ahí). main/master
+    # se dejan por si algún día se publica desde ahí.
+    branches: [develop, main, master]
   pull_request:
 
 jobs:
