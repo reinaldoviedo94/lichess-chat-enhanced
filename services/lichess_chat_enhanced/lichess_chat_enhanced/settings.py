@@ -171,20 +171,20 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': False,
 }
 
-# CORS — the extension's own origin is unknown (Chrome derives it from the
-# extension id), so the wildcard is what makes a packed extension work at all.
-# Deployments should list the concrete chrome-extension:// origins they ship.
-_extra_cors = [
+# CORS — todos los requests al backend salen de contextos de extensión (service worker
+# y popup, origen chrome-extension://). Gracias a `host_permissions` en manifest.json, Chrome
+# permite esas llamadas SIN exigir cabeceras CORS del servidor, así que aquí no hace falta
+# enlistar el origen de la extensión. La lista sólo cubre consumidores de origen de navegador
+# que se configuren explícitamente por entorno (CORS_ALLOWED_ORIGINS, coma-separado).
+CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
     if origin.strip()
 ]
-CORS_ALLOWED_ORIGINS = [
-    'chrome-extension://*',
-    *_extra_cors,
-]
+# Falso por defecto: no abrir el API a cualquier origen solo porque la extensión "puede".
+# Un despliegue que de verdad necesite wildcard debe pedirlo explícito en el entorno.
 CORS_ALLOW_ALL_ORIGINS = os.environ.get(
-    'CORS_ALLOW_ALL_ORIGINS', 'true'
+    'CORS_ALLOW_ALL_ORIGINS', 'false'
 ).lower() == 'true'
 
 # Django must treat the proxy's forwarded host as the real one, otherwise
