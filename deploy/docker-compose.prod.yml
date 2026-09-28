@@ -1,0 +1,30 @@
+# Production compose for the lce backend.
+# Copied to /opt/lce on the `apps` droplet; the image comes from GHCR.
+#
+# Ingress is two hops: Cloudflare terminates TLS, Nginx Proxy Manager on the
+# `base` droplet forwards to http://10.116.0.3:8101 (this service).
+
+services:
+  lce-backend:
+    image: ghcr.io/reinaldoviedo94/lichess-chat-enhanced/backend:${APP_VERSION:-latest}
+    container_name: lce-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DJANGO_DEBUG: "false"
+      DB_PATH: /data/db.sqlite3
+      MEDIA_ROOT: /data/media
+      EXTENSION_DIR: /extension
+    volumes:
+      - lce-data:/data
+      # Written by CI, read-only here. Django only ever reads from it.
+      - ./extension:/extension:ro
+    ports:
+      # Bound to the private address only: nothing on this droplet is public,
+      # ingress goes through Nginx Proxy Manager on `base`.
+      - "10.116.0.3:8101:8000"
+
+volumes:
+  lce-data:
+    name: lce-data

@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Django runtime state (never commit; production keeps it on a volume)
+db.sqlite3
+db.sqlite3-journal
+media/
+extension/
+*.log
+
+# Node / extension build output
+node_modules/
+dist/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Archify session evidence
+docs/*.visual-check.json
+docs/*.visual-check.html
+docs/*.visual-check.*.png

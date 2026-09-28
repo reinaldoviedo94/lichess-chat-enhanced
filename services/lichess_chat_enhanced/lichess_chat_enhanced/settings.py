@@ -10,22 +10,40 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# The public origin this deployment answers on. Used for CORS defaults and for
+# the absolute links on the download page.
+PUBLIC_ORIGIN = os.environ.get('PUBLIC_ORIGIN', 'http://127.0.0.1:8000').rstrip('/')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+# Development falls back to a throwaway key so `manage.py` works on a fresh
+# clone with no setup. Production must supply its own, and fails fast below.
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or 'django-insecure-dev-only-override-me'
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-7h(_!@enh(jzb@i6y95kllzb894@1=_4%e9v1_0qnjht_&amfc'
+DEBUG = os.environ.get('DJANGO_DEBUG', 'true').lower() == 'true'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',')
+    if host.strip()
+] or (['127.0.0.1', 'localhost'] if DEBUG else [])
 
-ALLOWED_HOSTS = []
+# Refuse to start a production-looking deployment with development settings.
+# Catching this here is cheaper than discovering it through a 500 later.
+if not DEBUG and not ALLOWED_HOSTS:
+    raise RuntimeError(
+        'DJANGO_ALLOWED_HOSTS is required when DJANGO_DEBUG is false.'
+    )
+if not DEBUG and SECRET_KEY.startswith('django-insecure'):
+    raise RuntimeError(
+        'DJANGO_SECRET_KEY is required and must not be the development key '
+        'when DJANGO_DEBUG is false.'
+    )
 
 
 # Application definition
@@ -83,7 +101,8 @@ WSGI_APPLICATION = 'lichess_chat_enhanced.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # In the container this lives on a named volume, not in the image.
+        'NAME': os.environ.get('DB_PATH', BASE_DIR / 'db.sqlite3'),
     }
 }
 
@@ -125,7 +144,12 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT', BASE_DIR / 'media')
+
+# Where CI drops the packaged extension. Read-only mount; the zip is produced
+# by the extension build, never by Django.
+EXTENSION_DIR = Path(os.environ.get('EXTENSION_DIR', BASE_DIR / 'extension'))
+EXTENSION_ZIP_NAME = os.environ.get('EXTENSION_ZIP_NAME', 'lichess-chat-enhanced.zip')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -140,8 +164,6 @@ REST_FRAMEWORK = {
 }
 
 # Simple JWT
-from datetime import timedelta
-
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
@@ -149,8 +171,23 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': False,
 }
 
-# CORS — allow the browser extension to talk to the API
+# CORS — the extension's own origin is unknown (Chrome derives it from the
+# extension id), so the wildcard is what makes a packed extension work at all.
+# Deployments should list the concrete chrome-extension:// origins they ship.
+_extra_cors = [
+    origin.strip()
+    for origin in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
+    if origin.strip()
+]
 CORS_ALLOWED_ORIGINS = [
     'chrome-extension://*',
+    *_extra_cors,
 ]
-CORS_ALLOW_ALL_ORIGINS = True  # TODO: restrict in production
+CORS_ALLOW_ALL_ORIGINS = os.environ.get(
+    'CORS_ALLOW_ALL_ORIGINS', 'true'
+).lower() == 'true'
+
+# Django must treat the proxy's forwarded host as the real one, otherwise
+# ALLOWED_HOSTS rejects every request that arrives through Nginx Proxy Manager.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True

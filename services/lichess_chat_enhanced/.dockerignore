@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.py[cod]
+
+# Runtime state must never be baked into an image
+db.sqlite3
+db.sqlite3-journal
+media/
+extension/
+
+*.log
+.pytest_cache/

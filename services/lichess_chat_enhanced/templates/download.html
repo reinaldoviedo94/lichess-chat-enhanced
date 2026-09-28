@@ -1,0 +1,101 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lichess Chat Enhanced — instalar</title>
+  <style>
+    :root {
+      --bg: #16181d;
+      --panel: #1e2128;
+      --line: #2c313b;
+      --ink: #e7e9ee;
+      --muted: #9aa3b2;
+      --accent: #7aa2f7;
+      --warn: #e0af68;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f6f7f9; --panel: #fff; --line: #e2e5ea;
+        --ink: #1a1d23; --muted: #5b6472; --accent: #3b6fd4;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 3rem 1.25rem; background: var(--bg); color: var(--ink);
+      font: 16px/1.65 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    main { max-width: 44rem; margin: 0 auto; }
+    h1 { font-size: 1.75rem; margin: 0 0 .25rem; letter-spacing: -.02em; }
+    h2 { font-size: 1.05rem; margin: 2.5rem 0 .75rem; }
+    p.lede { color: var(--muted); margin: 0 0 2rem; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.5rem; }
+    .btn {
+      display: inline-block; background: var(--accent); color: #fff; text-decoration: none;
+      padding: .7rem 1.4rem; border-radius: 8px; font-weight: 600;
+    }
+    .btn.disabled { background: var(--line); color: var(--muted); pointer-events: none; }
+    ol { padding-left: 1.2rem; }
+    li { margin-bottom: .75rem; }
+    code, .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: .875em; background: var(--bg); border: 1px solid var(--line);
+      padding: .15em .45em; border-radius: 5px;
+    }
+    pre {
+      background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+      padding: .9rem 1rem; overflow-x: auto; font-size: .85rem;
+    }
+    pre code { background: none; border: none; padding: 0; }
+    .meta { color: var(--muted); font-size: .875rem; margin-top: .9rem; }
+    .tag { display: inline-block; font-size: .75rem; color: var(--muted);
+           border: 1px solid var(--line); border-radius: 999px; padding: .1rem .6rem; }
+    .note { border-left: 3px solid var(--warn); padding-left: 1rem; color: var(--muted); }
+    footer { margin-top: 3rem; color: var(--muted); font-size: .85rem; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Lichess Chat Enhanced</h1>
+  <p class="lede">Emojis y packs dentro del chat de lichess, sin salir de la partida.</p>
+
+  <div class="panel">
+    {% if packaged %}
+      <a class="btn" href="{% url 'download-extension' %}">Descargar la extensión</a>
+      <p class="meta">
+        <span class="tag">v{{ extension_version }}</span>
+        <span class="tag">{{ size_kb }} KB</span>
+        <span class="tag">API v{{ version }}</span>
+      </p>
+    {% else %}
+      <span class="btn disabled">Todavía no hay empaquetado</span>
+      <p class="meta">El primer build de CI aún no ha publicado el zip en este servidor.</p>
+    {% endif %}
+  </div>
+
+  <h2>Instalar en Chrome</h2>
+  <ol>
+    <li>Descarga el zip y descomprímelo en una carpeta. <strong>La carpeta es la extensión</strong>: no la borres.</li>
+    <li>Abre <code>chrome://extensions</code>.</li>
+    <li>Activa <strong>Modo de desarrollador</strong> (arriba a la derecha).</li>
+    <li>Pulsa <strong>Cargar descomprimida</strong> y elige la carpeta que descomprimiste.</li>
+    <li>Abre una partida casual 1v1 contra otra persona. Las dos cuentas deben estarlogueadas.</li>
+  </ol>
+
+  <h2>Configurar la API</h2>
+  <p>La extensión usa esta misma API. Si mueves el servidor, cambia el endpoint en el popup:</p>
+  <pre><code>{{ origin }}/api/emojis/free/</code></pre>
+
+  <h2>No aparece nada en el chat</h2>
+  <p class="note">El chat de partida solo existe en casuales 1v1, y ambos jugadores deben
+  tener sesión iniciada. Contra la IA, en torneos, simul swiss el chat es otro y la
+  extensión no se inyecta.</p>
+
+  <footer>
+    <a href="https://github.com/reinaldoviedo94/lichess-chat-enhanced">Código fuente</a> ·
+    <a href="{{ origin }}/api/health/">Estado del servicio</a>
+  </footer>
+</main>
+</body>
+</html>
