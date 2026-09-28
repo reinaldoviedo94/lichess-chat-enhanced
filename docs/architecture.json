@@ -150,7 +150,7 @@
       "id": "api",
       "type": "backend",
       "label": "Django REST API",
-      "sublabel": "127.0.0.1:8000",
+      "sublabel": "REST API · dev/prod",
       "sources": [
         {
           "path": "services/lichess_chat_enhanced/lichess_chat_enhanced/settings.py",
@@ -280,7 +280,7 @@
     },
     {
       "kind": "security-group",
-      "label": "Servicio Django local",
+      "label": "Servicio Django (dev local / prod droplet 10.116.0.3)",
       "wraps": [
         "api",
         "packs",
@@ -368,12 +368,12 @@
   "cards": [
     {
       "dot": "cyan",
-      "title": "Estado real (b563c8e)",
+      "title": "Estado real (desplegado)",
       "items": [
-        "Backend solo en local: sin imagen de contenedor ni despliegue",
-        "Adquirir un pack es gratis: no hay pagos",
-        "DEBUG=True, SECRET_KEY en el repo, CORS abierto",
-        "Hay harness e2e, pero Playwright no carga la extensión"
+        "Producción: https://lce.casahidroneumatica.com.co (Cloudflare → NPM → droplet apps)",
+        "CI/CD: deploy.yml redespliega en cada push a develop",
+        "Login persiste 1 vez: refresh 30 d + auto-refresh en cliente",
+        "Pendiente: rebasar API_BASE/host_permissions a prod; toast solo-emojis-oponente"
       ]
     },
     {
@@ -381,7 +381,7 @@
       "title": "Por qué el chat no siempre aparece",
       "items": [
         "hasChat: ni torneo, ni simul, ni swiss, ni IA",
-        "Los dos deben estar logueados; anónimo solo ve presets",
+        "Ambos deben tener la extensión; registrado necesari para packs de pago",
         "mchat__say es input con maxlength 140, no textarea",
         "PNG a data URI; Lottie como JSON vía service worker"
       ]

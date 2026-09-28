@@ -219,21 +219,50 @@ Si lila re-renderiza el input del chat (navegación SPA, cambio de pestaña, ent
 partida), la extensión queda muerta en esa página: no hay Observer, no hay botón y no hay
 camino de re-inicialización. Es el primer bug que conviene atacar.
 
+## Decisiones de sesión (2026-09-28) — toast y login
+
+Decisiones de producto tomadas en la sesión de producto, documentadas aquí porque no son obvias
+en el código (algunas aún sin implementar):
+
+- **El toast/reacción grande sale solo con los emojis del OPONENTE.** El contenedor ya vive en la
+  esquina inferior-izquierda (`.lce-toast-container`, `position:fixed; bottom/left 24px`). Hoy
+  el toast dispara para todo mensaje entrante con emoji (incluido el tuyo); la decisión es
+  mostrar solo los del rival para leer si está tilteando.
+- **Cómo se detecta "es el oponente"**: cada mensaje del chat de lila es un `<li>`, y los propios
+  llevan la clase `me` (`.mchat__messages li.me`, según `discussion.ts` de lila). Filtro propuesto:
+  `!li.classList.contains('me')` y no `li.system`. Respaldo: comparar el autor de `a.user-link`
+  con `api.me().username`. **Pendiente de implementar** en `content.js`/`content.css`.
+- **El efecto "influir al oponente" exige que ambos oponentes tengan la extensión instalada**
+  (el chat es texto plano; el emoji/toast solo se renderiza del lado del que la tiene).
+  **Registrado** es necesario para packs de pago/store; los packs gratis cargan sin login.
+- **El login ya persiste 1 vez por diseño**: `api.js` guarda `access`+`refresh` en
+  `chrome.storage.local` (sobrevive cierres); backend `REFRESH_TOKEN_LIFETIME = 30 días`,
+  `ROTATE_REFRESH_TOKENS = True`; `authFetch()` refresca en silencio ante un 401. El register ya
+  hace auto-login.
+- **Brecha de producción (por arreglar)**: la extensión apunta a local: en `api.js`
+  `API_BASE = 'http://127.0.0.1:8000/api'` y `host_permissions = ['http://127.0.0.1:8000/*']`.
+  Para que dos oponentes se registren/loguen contra el backend desplegado, hay que rebasarlo al
+  origen público `https://lce.casahidroneumatica.com.co`.
+
 ## Estado del proyecto
 
-**Inmaduro a propósito.** Issues abiertos en GitHub documentan lo que falta. Lo relevante antes de tocar otra cosa:
+**En producción (backend + página de descarga).** Issues abiertos en GitHub documentan lo que falta:
 
-- Sin tests unitarios (los `tests.py` son boilerplate de `startapp`) y sin CI. El harness e2e
-  existe pero su vía automatizada está bloqueada por la limitación de Playwright descrita arriba.
-- `settings.py` tiene `SECRET_KEY` hardcodeada, `DEBUG = True` y `CORS_ALLOW_ALL_ORIGINS = True`
-  ([#1](https://github.com/reinaldoviedo94/lichess-chat-enhanced/issues/1),
+- **Desplegado**: `https://lce.casahidroneumatica.com.co` sirve la página de descarga
+  (`/`), el zip (`/download/lichess-chat-enhanced.zip`, v1.0.0, 76 KB) y la API
+  (`/api/health/`, `/api/emojis/*`). Ruta de entrada: Cloudflare (proxied) → NPM (`do-base`,
+  `167.99.234.237:81`, cert Let's Encrypt DNS-01) → droplet `apps` (`10.116.0.3:8101`).
+- **CI/CD**: `.github/workflows/deploy.yml` (GHCR público → scp → ssh → healthcheck) redespliega
+  en cada push a `develop`.
+- **Aún pendiente**: la extensión apunta a `127.0.0.1:8000`, no al dominio (ver decisión de arriba);
+  sin tests unitarios/CI en el cliente y el harness e2e bloqueado por la limitación de Playwright;
+  la adquisición de packs no implementa pagos
+  ([#5](https://github.com/reinaldoviedo94/lichess-chat-enhanced/issues/5));
+  `settings.py` quedó env-driven (los issues
+  [#1](https://github.com/reinaldoviedo94/lichess-chat-enhanced/issues/1),
   [#2](https://github.com/reinaldoviedo94/lichess-chat-enhanced/issues/2),
-  [#3](https://github.com/reinaldoviedo94/lichess-chat-enhanced/issues/3)).
-- La adquisición de packs no implementa pagos
-  ([#5](https://github.com/reinaldoviedo94/lichess-chat-enhanced/issues/5)).
-- Sin despliegue: el backend solo corre en local, no hay imagen de contenedor ni pipeline.
-- La extensión no se puede instalar de un clic: hay que cargarla descomprimida desde `dist/`.
-  No hay página de descarga ni paquete firmado.
+  [#3](https://github.com/reinaldoviedo94/lichess-chat-enhanced/issues/3) de secrets/DEBUG se
+  resolvieron vía entorno en el despliegue)."}]
 
 ## Licencia
 
