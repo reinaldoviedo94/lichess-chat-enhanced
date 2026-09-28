@@ -7,33 +7,40 @@ let emojiMap = {}; // slug -> { image, emoji_type, pack_slug }
 let pickerVisible = false;
 let pickerEl = null;
 let buttonEl = null;
-let initialized = false;
 let isTransforming = false;
 let transformDebounceTimer = null;
+
+// --- Lifecycle / mount state ---
+// La fuente de verdad del montaje es `mountedContent`: el nodo .mchat__content sobre el que
+// estamos montados. Antes esto era un booleano `initialized` que se quedaba a true para siempre:
+// cuando lila re-renderizaba el chat (cambio de partida/tema/sala) el panel moría sin recuperarse.
+let mountedContent = null; // .mchat__content actualmente montado (o null)
+let chatInputEl = null;    // input que envolvemos
+let outsideClickHandler = null;
+let catalogLoaded = false;
+let setupTimer = null;     // debounce de (re)montajes
 
 // --- Catalog Loading ---
 
 async function loadCatalog() {
   return new Promise((resolve) => {
     chrome.runtime.sendMessage({ type: 'GET_EMOJI_CATALOG' }, (catalog) => {
-      if (!catalog) {
-        resolve();
-        return;
-      }
+      if (catalog) {
+        emojiMap = {};
+        const allPacks = [...(catalog.freePacks || []), ...(catalog.userPacks || [])];
 
-      emojiMap = {};
-      const allPacks = [...(catalog.freePacks || []), ...(catalog.userPacks || [])];
-
-      for (const pack of allPacks) {
-        for (const emoji of pack.emojis || []) {
-          emojiMap[emoji.slug] = {
-            image: emoji.image,
-            emoji_type: emoji.emoji_type,
-            pack_slug: pack.slug,
-          };
+        for (const pack of allPacks) {
+          for (const emoji of pack.emojis || []) {
+            emojiMap[emoji.slug] = {
+              image: emoji.image,
+              emoji_type: emoji.emoji_type,
+              pack_slug: pack.slug,
+            };
+          }
         }
       }
 
+      catalogLoaded = true;
       resolve();
     });
   });
@@ -166,10 +173,12 @@ function showEmojiToast(slug, emojiData) {
 
   toastContainer.appendChild(toast);
 
-  // Trigger fade-out after 3s, remove after animation ends
+  // Trigger fade-out after 3s, remove after animation ends. Bajo prefers-reduced-motion
+  // `animationend` nunca dispara (animation:none), así que hay un timer de seguridad.
   setTimeout(() => {
     toast.classList.add('lce-toast-out');
     toast.addEventListener('animationend', () => toast.remove());
+    setTimeout(() => toast.remove(), 700);
   }, 3000);
 }
 
@@ -184,10 +193,20 @@ function safeTransform(chatContent, showToasts = false) {
 
 // --- Emoji Picker UI ---
 
-function createPicker(chatInput) {
+function setPickerExpanded(expanded) {
+  if (buttonEl) buttonEl.setAttribute('aria-expanded', String(expanded));
+}
+
+function mountPicker(chatInput) {
+  chatInputEl = chatInput;
+
+  // Envolvemos el input con un wrapper sin romper el layout original de lila: guardamos el
+  // punto de inserción (padre + siguiente hermano) para poder des-envolver en unmountPicker().
   const wrapper = document.createElement('div');
   wrapper.className = 'lce-input-wrapper';
-  chatInput.parentNode.insertBefore(wrapper, chatInput);
+  const originalParent = chatInput.parentNode;
+  const nextSibling = chatInput.nextSibling;
+  originalParent.insertBefore(wrapper, chatInput);
   wrapper.appendChild(chatInput);
 
   // Emoji button
@@ -195,6 +214,9 @@ function createPicker(chatInput) {
   buttonEl.className = 'lce-emoji-btn';
   buttonEl.textContent = '\u{1F60A}';
   buttonEl.type = 'button';
+  buttonEl.setAttribute('aria-haspopup', 'dialog');
+  buttonEl.setAttribute('aria-expanded', 'false');
+  buttonEl.setAttribute('aria-label', 'Abrir selector de emojis');
   buttonEl.addEventListener('click', (e) => {
     e.stopPropagation();
     togglePicker();
@@ -207,24 +229,47 @@ function createPicker(chatInput) {
   pickerEl.style.display = 'none';
   wrapper.appendChild(pickerEl);
 
-  // Close on outside click
-  document.addEventListener('click', (e) => {
+  // Close on outside click. El handler se guarda para poder quitarlo en unmountPicker()
+  // (si no, cada remount añade un listener que se filtra).
+  outsideClickHandler = (e) => {
     if (pickerVisible && !pickerEl.contains(e.target) && e.target !== buttonEl) {
       hidePicker();
     }
-  });
+  };
+  document.addEventListener('click', outsideClickHandler, true);
 
   renderPicker(chatInput);
 }
 
+function unmountPicker() {
+  if (!chatInputEl) return;
+
+  if (outsideClickHandler) {
+    document.removeEventListener('click', outsideClickHandler, true);
+    outsideClickHandler = null;
+  }
+
+  // Devuelve el input a su padre real (reemplaza el wrapper): si no, un input huérfano
+  // dentro de un wrapper muerto deja al usuario sin campo de chat tras un re-render.
+  const wrapper = chatInputEl.closest('.lce-input-wrapper');
+  if (wrapper && wrapper.parentNode) wrapper.replaceWith(chatInputEl);
+
+  pickerEl = null;
+  buttonEl = null;
+  chatInputEl = null;
+  pickerVisible = false;
+}
+
 function togglePicker() {
   pickerVisible = !pickerVisible;
-  pickerEl.style.display = pickerVisible ? 'block' : 'none';
+  if (pickerEl) pickerEl.style.display = pickerVisible ? 'block' : 'none';
+  setPickerExpanded(pickerVisible);
 }
 
 function hidePicker() {
   pickerVisible = false;
   if (pickerEl) pickerEl.style.display = 'none';
+  setPickerExpanded(false);
 }
 
 function renderPicker(chatInput) {
@@ -289,70 +334,95 @@ function insertEmoji(chatInput, slug) {
   hidePicker();
 }
 
-// --- Initialization ---
+// --- Mount lifecycle ---
 
-function setup() {
-  if (initialized) return;
+function isChatConnected() {
+  return !!mountedContent && mountedContent.isConnected;
+}
+
+/** Un remount o un teardown se debounea: lila dispara muchas mutaciones seguidas al cambiar
+ *  de sala/tema y no queremos montar-desmontar una vez por mutación. */
+function scheduleSync() {
+  if (setupTimer) return;
+  setupTimer = setTimeout(syncMount, 50);
+}
+
+function syncMount() {
+  setupTimer = null;
+  if (!catalogLoaded) return; // el boot ya correrá syncMount al terminar el catálogo
 
   const chatContent = document.querySelector('.mchat__content');
   const chatInput = document.querySelector('.mchat__say');
 
-  if (!chatContent || !chatInput) return;
+  // Sin chat a la vista -> desmontar lo que hubiera (el panel no debe quedar huérfano).
+  if (!chatContent || !chatInput) {
+    if (mountedContent) teardownMount();
+    return;
+  }
 
-  initialized = true;
+  // Ya montado y vivo sobre el mismo nodo: no hacer nada.
+  if (chatContent === mountedContent && isChatConnected()) return;
 
-  createPicker(chatInput);
-
-  // Observe only the chat content area for new messages
-  const observer = new MutationObserver((mutations) => {
-    // Skip mutations caused by our own transforms or lottie animations
-    if (isTransforming) return;
-
-    const hasNewContent = mutations.some((m) =>
-      m.type === 'childList' &&
-      [...m.addedNodes].some((n) => !n.closest?.(`[${LCE_ATTR}]`) && !n.closest?.('.lce-emoji'))
-    );
-
-    if (!hasNewContent) return;
-
-    // Debounce to avoid rapid-fire transforms
-    clearTimeout(transformDebounceTimer);
-    transformDebounceTimer = setTimeout(() => {
-      safeTransform(chatContent, true);
-    }, 100);
-  });
-  observer.observe(chatContent, { childList: true, subtree: true });
-
-  // Transform existing messages
+  // Nodo nuevo (o el viejo fue detachado por lila): desmontar limpio y montar de nuevo.
+  if (mountedContent) teardownMount();
+  mountedContent = chatContent;
+  mountPicker(chatInput);
   safeTransform(chatContent);
 }
+
+function teardownMount() {
+  if (transformDebounceTimer) {
+    clearTimeout(transformDebounceTimer);
+    transformDebounceTimer = null;
+  }
+  unmountPicker();
+  mountedContent = null;
+}
+
+/** Las mutaciones de *nosotros* (spans data-lce-processed, lottie, el picker, el wrapper) no
+ *  deben tratarse como contenido entrante. Solo cuentan nodos reales dentro del chat montado. */
+function hasIncomingContent(mutations) {
+  return mutations.some((m) =>
+    m.type === 'childList' &&
+    [...m.addedNodes].some(
+      (n) =>
+        n.nodeType === Node.ELEMENT_NODE &&
+        isChatConnected() &&
+        mountedContent.contains(n) &&
+        !n.matches?.(`[${LCE_ATTR}]`) &&
+        !n.closest?.(`[${LCE_ATTR}], .lce-emoji, .lce-picker, .lce-input-wrapper`)
+    )
+  );
+}
+
+// Observador permanente sobre el cuerpo: sobrevive a los re-renders de lila (que detachaban el
+// nodo del observador anterior) y cubre tanto mensajes nuevos como remounts.
+const pageObserver = new MutationObserver((mutations) => {
+  const current = document.querySelector('.mchat__content');
+  if (current !== mountedContent) {
+    scheduleSync(); // remount o teardown, debouneado
+    return;
+  }
+  if (isTransforming) return;
+  if (!hasIncomingContent(mutations)) return;
+
+  // Debounce para transformar en ráfaga sin pisarnos
+  clearTimeout(transformDebounceTimer);
+  transformDebounceTimer = setTimeout(() => {
+    if (mountedContent) safeTransform(mountedContent, true);
+  }, 100);
+});
 
 // Listen for reload signal from background
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type === 'RELOAD_EMOJIS') {
     loadCatalog().then(() => {
-      if (pickerEl) {
-        const chatInput = document.querySelector('.mchat__say');
-        if (chatInput) renderPicker(chatInput);
-      }
-
-      const chatContent = document.querySelector('.mchat__content');
-      if (chatContent) safeTransform(chatContent);
+      if (chatInputEl) renderPicker(chatInputEl);
+      if (mountedContent && isChatConnected()) safeTransform(mountedContent);
     });
   }
 });
 
-// Wait for chat to appear (Lichess loads dynamically)
-const pageObserver = new MutationObserver(() => {
-  if (!initialized && document.querySelector('.mchat__content')) {
-    loadCatalog().then(() => setup());
-    pageObserver.disconnect();
-  }
-});
-
-// Start
-if (document.querySelector('.mchat__content')) {
-  loadCatalog().then(() => setup());
-} else {
-  pageObserver.observe(document.body, { childList: true, subtree: true });
-}
+// Start: un solo observador del cuerpo + arranque con el catálogo.
+pageObserver.observe(document.body, { childList: true, subtree: true });
+loadCatalog().then(syncMount);

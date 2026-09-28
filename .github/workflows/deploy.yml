@@ -53,12 +53,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    # Note: no GITHUB_TOKEN and no docker login. The backend image is a public
-    # GHCR package, so the droplet pulls it anonymously. Logging in made this
-    # worse, not better: an under-privileged token in ~/.docker/config.json
-    # takes precedence over anonymous access, so every pull failed with
-    # "error from registry: denied" even though the image was public. If the
-    # package ever goes private, swap this for a PAT secret.
+    env:
+      # These are forwarded to the SSH script below via the action's envs
+      # list. The Django secret stays referenced inline: it must not be
+      # echoed into a public variable.
+      APP_VERSION: ${{ needs.build.outputs.version }}
+      PUBLIC_ORIGIN: ${{ secrets.PUBLIC_ORIGIN }}
+      DJANGO_ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
+      CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
     steps:
       - uses: actions/checkout@v4
 
