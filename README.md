@@ -65,29 +65,41 @@ Comprobado en esta sesión: el `viewBox` manda en la legibilidad a 1440px (el su
 
 ---
 
-## UX/UI del picker y el plano ToolJet
+## UX/UI del picker
 
-El rediseño del menú de emojis (lenguaje shadcn con estética del selector de WhatsApp) está
-especificado, no implementado:
+> **ToolJet quedó descartado (2026-09-27).** La vía de automatizar el diseño con ToolJet (MCP +
+> skill + contenedor local) se probó y se abandonó: la instancia local corría una licencia inválida
+> que bloqueaba justo la feature que necesitábamos (temas), y la configuración MCP se retiró. Se
+> sigue con el rediseño en la ruta de siempre: CSS nativo + design tokens en git.
+
+El rediseño del menú de emojis (lenguaje shadcn con estética del selector de WhatsApp) está **en
+marcha con el stack nativo de la extensión**: vanilla JS + CSS con design tokens.
 
 | Documento | Qué es |
 |---|---|
-| [`docs/specs/ux-ui-tooljet.md`](docs/specs/ux-ui-tooljet.md) | **La spec**: por qué ToolJet no va dentro de la extensión, anatomía del panel, interacciones, a11y, contrato de design tokens, fases y criterios de aceptación |
-| [`docs/tooljet.md`](docs/tooljet.md) | **Runbook** de ToolJet en esta máquina: qué está instalado, cómo crear el PAT, tools útiles, límites |
-| `docs/tooljet.html` / `.json` | Diagrama del plano ToolJet con Archify (spec + artefacto, mismo flujo que el diagrama de arquitectura) |
+| [`docs/design/tokens.json`](docs/design/tokens.json) | **Contrato de design tokens** (light/dark, paleta WhatsApp, radios, espaciados). Fuente de verdad, se edita a mano. |
+| [`scripts/tokens-to-css.mjs`](scripts/tokens-to-css.mjs) | Genera `src/content/tokens.css` y `src/popup/tokens.css` desde el contrato. `--check` sirve para CI. |
+| [`docs/specs/ux-ui-tooljet.md`](docs/specs/ux-ui-tooljet.md) | Guía de diseño histórica: anatomía del panel, interacciones, a11y WCAG 2.2 AA, fases y criterios de aceptación. |
 
-Resumen de la decisión, que es la parte no obvia:
+Decisiones:
 
-- **ToolJet es plano de diseño y de operación, no runtime.** El picker vive en un content script
-  MV3 bajo la CSP de lichess.org, con el catálogo ya resuelto a data URI; un bundle de ToolJet o un
-  `<iframe>` remoto no cabe ahí (embed además es plan Team).
-- **Lo único que cruza de diseño a runtime son los design tokens**: el tema de ToolJet se exporta a
+- **La UI se queda en vanilla JS + CSS.** shadcn aquí es un lenguaje (tokens, radios, estados de
+  interacción) portado a CSS, no el runtime de React. El bundle no crece.
+- **Los tokens son la fuente de verdad:** hoy se escriben a mano en `tokens.json` y se versionan en
+  git (un script los vuelca a `tokens.css`); no dependen de ninguna herramienta externa.
+- La parte de la vida del picker de P1 **ya está hecha**: antes el panel moría si lila
+  re-renderizaba el chat; ahora un observador permanente re-monta y des-monta limpiamente, con
+  test en `e2e/lifecycle.test.mjs`.
+
+Apunte histórico (por qué y qué se descartó):
+
+- ToolJet llegó a evaluarse como **plano de diseño y de operación, no runtime**, y se descartó por
+  la licencia local inválida. El picker vive en un content script MV3 bajo la CSP de lichess.org,
+  con el catálogo ya resuelto a data URI; un bundle de ToolJet o un `<iframe>` remoto no cabe ahí
+  (embed además es plan Team).
+- **Lo único que cruza de diseño a runtime son los design tokens**: la paleta se mantiene en
   `docs/design/tokens.json` y de ahí a `tokens.css`. Mismo esquema `brand / text / border / surface
   / systemStatus` que usa shadcn, así que el mapeo es 1:1.
-- **La UI se queda en vanilla JS.** shadcn aquí es un lenguaje (tokens, radios, estados de
-  interacción) portado a CSS, no el runtime de React. El bundle no crece.
-- **Las fases P0–P2 no dependen de ToolJet.** Si ToolJet nunca se levanta, la mejora de UX/UI igual
-  se entrega.
 - De paso, el rediseño **cierra el bug conocido** de re-inicialización: hoy el panel desaparece si
   lila re-renderiza el chat.
 

@@ -6,7 +6,10 @@
 
 services:
   lce-backend:
-    image: ghcr.io/reinaldoviedo94/lichess-chat-enhanced/backend:${APP_VERSION:-latest}
+    # The workflow always pushes latest, so the image tag is a fixed string
+    # here. APP_VERSION (below) is a separate concern: it is what the health
+    # endpoint reports, not a docker tag.
+    image: ghcr.io/reinaldoviedo94/lichess-chat-enhanced/backend:latest
     container_name: lce-backend
     restart: unless-stopped
     env_file:
