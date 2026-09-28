@@ -4,6 +4,7 @@ Extensión de Chrome (MV3) + servicio Django que agrega **emojis y packs de stic
 
 - **URL del diagrama (verdad canónica):** <https://reinaldoviedo94.github.io/lichess-chat-enhanced/architecture.html>
 - **Spec del diagrama:** [`docs/architecture.json`](docs/architecture.json)
+- **Plano ToolJet (diseño y operación):** [`docs/tooljet.html`](docs/tooljet.html) · spec [`docs/tooljet.json`](docs/tooljet.json)
 - **Índice de los dos diagramas:** <https://reinaldoviedo94.github.io/lichess-chat-enhanced/>
 
 Hay dos diagramas, con el mismo nivel de autoridad:
@@ -63,6 +64,32 @@ Al regenerar, **actualiza a mano `meta.repository.revision`** con el SHA complet
 Comprobado en esta sesión: el `viewBox` manda en la legibilidad a 1440px (el subtexto de 9px necesita escala ≥ 0,667, así que el ancho del viewBox no puede pasar de ~1390) y `visual-check` puede reprobar por unos pocos píxeles de overflow vertical que `validate` no detecta. Hay que iterar con los dos, no solo con `validate`.
 
 ---
+
+## UX/UI del picker y el plano ToolJet
+
+El rediseño del menú de emojis (lenguaje shadcn con estética del selector de WhatsApp) está
+especificado, no implementado:
+
+| Documento | Qué es |
+|---|---|
+| [`docs/specs/ux-ui-tooljet.md`](docs/specs/ux-ui-tooljet.md) | **La spec**: por qué ToolJet no va dentro de la extensión, anatomía del panel, interacciones, a11y, contrato de design tokens, fases y criterios de aceptación |
+| [`docs/tooljet.md`](docs/tooljet.md) | **Runbook** de ToolJet en esta máquina: qué está instalado, cómo crear el PAT, tools útiles, límites |
+| `docs/tooljet.html` / `.json` | Diagrama del plano ToolJet con Archify (spec + artefacto, mismo flujo que el diagrama de arquitectura) |
+
+Resumen de la decisión, que es la parte no obvia:
+
+- **ToolJet es plano de diseño y de operación, no runtime.** El picker vive en un content script
+  MV3 bajo la CSP de lichess.org, con el catálogo ya resuelto a data URI; un bundle de ToolJet o un
+  `<iframe>` remoto no cabe ahí (embed además es plan Team).
+- **Lo único que cruza de diseño a runtime son los design tokens**: el tema de ToolJet se exporta a
+  `docs/design/tokens.json` y de ahí a `tokens.css`. Mismo esquema `brand / text / border / surface
+  / systemStatus` que usa shadcn, así que el mapeo es 1:1.
+- **La UI se queda en vanilla JS.** shadcn aquí es un lenguaje (tokens, radios, estados de
+  interacción) portado a CSS, no el runtime de React. El bundle no crece.
+- **Las fases P0–P2 no dependen de ToolJet.** Si ToolJet nunca se levanta, la mejora de UX/UI igual
+  se entrega.
+- De paso, el rediseño **cierra el bug conocido** de re-inicialización: hoy el panel desaparece si
+  lila re-renderiza el chat.
 
 ## Estructura
 

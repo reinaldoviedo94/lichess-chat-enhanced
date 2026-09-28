@@ -1,0 +1,276 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Lichess Chat Enhanced — plano ToolJet (diseño y operación)",
+    "subtitle": "ToolJet prototipa y opera; la extensión se shippa sin ToolJet. Solo cruzan tokens y datos.",
+    "locale": "en",
+    "output": "docs/tooljet.html",
+    "viewBox": [
+      1020,
+      640
+    ],
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "default": {
+          "label": "consulta de datos"
+        },
+        "emphasis": {
+          "label": "lo único que llega al runtime"
+        },
+        "security": {
+          "label": "credencial, fuera de git"
+        },
+        "dashed": {
+          "label": "versionado en el repo, revisado en PR"
+        }
+      }
+    },
+    "views": [
+      {
+        "id": "design-loop",
+        "label": "Loop de diseño",
+        "focus": [
+          "agent",
+          "mcp",
+          "design-lab",
+          "theme",
+          "tokens-json",
+          "tokens-css",
+          "picker"
+        ],
+        "note": "Del prompt al prototipo, del tema al CSS que se shippa."
+      },
+      {
+        "id": "token-bridge",
+        "label": "Puente de tokens",
+        "focus": [
+          "design-lab",
+          "theme",
+          "tokens-json",
+          "tokens-css",
+          "picker"
+        ],
+        "note": "Lo único que cruza de diseño a runtime: variables CSS."
+      },
+      {
+        "id": "ops-console",
+        "label": "Consola de packs",
+        "focus": [
+          "agent",
+          "mcp",
+          "console",
+          "django-api"
+        ],
+        "note": "ToolJet opera la API Django; Django sigue siendo la única fuente de verdad."
+      },
+      {
+        "id": "secrets",
+        "label": "Credenciales",
+        "focus": [
+          "pat",
+          "mcp"
+        ],
+        "note": "El PAT se ancla a un workspace, vive fuera de git y solo actúa en desarrollo."
+      }
+    ]
+  },
+  "stages": [
+    {
+      "label": "Diseño"
+    },
+    {
+      "label": "ToolJet"
+    },
+    {
+      "label": "Contratos en git"
+    },
+    {
+      "label": "Runtime y datos"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "agent",
+      "type": "backend",
+      "label": "Agente pi",
+      "sublabel": "skill app-builder",
+      "stage": 0,
+      "row": 1,
+      "tag": "50 tools"
+    },
+    {
+      "id": "pat",
+      "type": "security",
+      "label": "PAT tj_pat",
+      "sublabel": "un workspace",
+      "stage": 0,
+      "row": 0,
+      "tag": "fuera de git"
+    },
+    {
+      "id": "mcp",
+      "type": "cloud",
+      "label": "ToolJet MCP",
+      "sublabel": "stdio, lazy",
+      "stage": 1,
+      "row": 1,
+      "tag": "create_app"
+    },
+    {
+      "id": "design-lab",
+      "type": "frontend",
+      "label": "Design Lab",
+      "sublabel": "prototipo",
+      "stage": 1,
+      "row": 0,
+      "tag": "WhatsApp"
+    },
+    {
+      "id": "theme",
+      "type": "database",
+      "label": "Tema",
+      "sublabel": "manage_theme",
+      "stage": 2,
+      "row": 0,
+      "tag": "brand/text/surface"
+    },
+    {
+      "id": "console",
+      "type": "frontend",
+      "label": "Consola de packs",
+      "sublabel": "precios, assets",
+      "stage": 1,
+      "row": 3,
+      "tag": "sin pagos"
+    },
+    {
+      "id": "tokens-json",
+      "type": "database",
+      "label": "tokens.json",
+      "sublabel": "contrato canónico",
+      "stage": 2,
+      "row": 1,
+      "tag": "revisado en PR"
+    },
+    {
+      "id": "tokens-css",
+      "type": "backend",
+      "label": "tokens.css",
+      "sublabel": "generado",
+      "stage": 2,
+      "row": 2,
+      "tag": "--lce-*"
+    },
+    {
+      "id": "picker",
+      "type": "frontend",
+      "label": "Picker",
+      "sublabel": "content script MV3",
+      "stage": 3,
+      "row": 1,
+      "tag": "vanilla"
+    },
+    {
+      "id": "django-api",
+      "type": "backend",
+      "label": "API Django",
+      "sublabel": "packs, catálogo, ORM",
+      "stage": 3,
+      "row": 3,
+      "tag": "REST"
+    }
+  ],
+  "flows": [
+    {
+      "id": "f-agent-mcp",
+      "from": "agent",
+      "to": "mcp",
+      "label": "crea y modifica apps",
+      "variant": "emphasis",
+      "route": "straight",
+      "labelAt": [
+        208,
+        314
+      ]
+    },
+    {
+      "id": "f-pat-mcp",
+      "from": "pat",
+      "to": "mcp",
+      "label": "autentica",
+      "variant": "security",
+      "labelDy": 22
+    },
+    {
+      "id": "f-mcp-lab",
+      "from": "mcp",
+      "to": "design-lab",
+      "label": "add_components",
+      "variant": "emphasis",
+      "labelDy": -20
+    },
+    {
+      "id": "f-mcp-console",
+      "from": "mcp",
+      "to": "console",
+      "label": "add_queries",
+      "variant": "emphasis",
+      "labelDy": 22
+    },
+    {
+      "id": "f-lab-theme",
+      "from": "design-lab",
+      "to": "theme",
+      "label": "update_app_settings",
+      "variant": "default",
+      "labelDy": -18
+    },
+    {
+      "id": "f-theme-json",
+      "from": "theme",
+      "to": "tokens-json",
+      "label": "export",
+      "variant": "dashed",
+      "labelDy": 22
+    },
+    {
+      "id": "f-json-css",
+      "from": "tokens-json",
+      "to": "tokens-css",
+      "label": "tokens-to-css",
+      "variant": "dashed",
+      "labelDy": 22
+    },
+    {
+      "id": "f-css-picker",
+      "from": "tokens-css",
+      "to": "picker",
+      "label": "variables CSS",
+      "variant": "emphasis",
+      "labelDy": 22
+    },
+    {
+      "id": "f-console-api",
+      "from": "console",
+      "to": "django-api",
+      "label": "REST + Bearer",
+      "variant": "default",
+      "fromSide": "right",
+      "toSide": "left",
+      "route": "vertical-channel",
+      "labelDy": 22
+    },
+    {
+      "id": "f-picker-api",
+      "from": "picker",
+      "to": "django-api",
+      "label": "catálogo",
+      "variant": "default",
+      "route": "straight",
+      "labelDy": 22
+    }
+  ]
+}
