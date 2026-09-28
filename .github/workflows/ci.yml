@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend (Django)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/lichess_chat_enhanced
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install .
+
+      - name: Django tests
+        env:
+          DJANGO_DEBUG: 'true'
+          # clave de CI de baja seguridad; nunca usada en producción
+          DJANGO_SECRET_KEY: 'ci-only-insecure-key'
+        run: python manage.py test
+
+  frontend:
+    name: Frontend (extensión)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clients/extensions/chrome/lichess-chat-enhanced
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.30.1'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Tokens (contrato de diseño)
+        run: pnpm tokens:check
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Unit tests (transform + authFetch)
+        run: pnpm test:unit
+
+      - name: Build (webpack)
+        run: pnpm build
