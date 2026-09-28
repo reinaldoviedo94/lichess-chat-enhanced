@@ -1,0 +1,388 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Lichess Chat Enhanced — arquitectura",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      640
+    ],
+    "repository": {
+      "url": "https://github.com/reinaldoviedo94/lichess-chat-enhanced",
+      "provider": "github",
+      "revision": "5f2f9ca4c3fa9416f4a877220e8a8a7ff5494377"
+    },
+    "views": [
+      {
+        "id": "render-path",
+        "label": "Ruta de render",
+        "focus": [
+          "lichess",
+          "content",
+          "background",
+          "api"
+        ],
+        "note": "Sigue un emoticon desde que llega al chat hasta que la API responde con el catálogo."
+      },
+      {
+        "id": "auth-store",
+        "label": "Auth y estado",
+        "focus": [
+          "popup",
+          "storage",
+          "jwt",
+          "sqlite"
+        ],
+        "note": "Inspecciona el login, los tokens JWT y quién los guarda."
+      },
+      {
+        "id": "content-boundary",
+        "label": "Frontera de contenido",
+        "focus": [
+          "content",
+          "background",
+          "api"
+        ],
+        "note": "Aísla el código que se inyecta en la página de lichess.org."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "lichess",
+      "type": "external",
+      "label": "lichess.org",
+      "sublabel": "Chat multijugador",
+      "sources": [
+        {
+          "path": "clients/extensions/chrome/lichess-chat-enhanced/manifest.json",
+          "line": 21
+        }
+      ],
+      "pos": [
+        30,
+        225
+      ],
+      "size": [
+        150,
+        70
+      ]
+    },
+    {
+      "id": "content",
+      "type": "frontend",
+      "label": "Content script",
+      "sublabel": "Picker y reemplazo :slug:",
+      "sources": [
+        {
+          "path": "clients/extensions/chrome/lichess-chat-enhanced/src/content/content.js"
+        }
+      ],
+      "pos": [
+        250,
+        225
+      ],
+      "size": [
+        150,
+        70
+      ]
+    },
+    {
+      "id": "background",
+      "type": "backend",
+      "label": "Service worker",
+      "sublabel": "Catálogo y data URI",
+      "sources": [
+        {
+          "path": "clients/extensions/chrome/lichess-chat-enhanced/src/background/background.js"
+        }
+      ],
+      "pos": [
+        500,
+        225
+      ],
+      "size": [
+        150,
+        70
+      ]
+    },
+    {
+      "id": "popup",
+      "type": "frontend",
+      "label": "Popup",
+      "sublabel": "Login y store",
+      "sources": [
+        {
+          "path": "clients/extensions/chrome/lichess-chat-enhanced/src/popup/popup.js"
+        }
+      ],
+      "pos": [
+        250,
+        400
+      ],
+      "size": [
+        150,
+        70
+      ]
+    },
+    {
+      "id": "storage",
+      "type": "database",
+      "label": "chrome.storage",
+      "sublabel": "Tokens JWT",
+      "sources": [
+        {
+          "path": "clients/extensions/chrome/lichess-chat-enhanced/src/lib/api.js",
+          "line": 4
+        }
+      ],
+      "pos": [
+        500,
+        400
+      ],
+      "size": [
+        150,
+        70
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Django REST API",
+      "sublabel": "127.0.0.1:8000",
+      "sources": [
+        {
+          "path": "services/lichess_chat_enhanced/lichess_chat_enhanced/settings.py",
+          "line": 120
+        }
+      ],
+      "pos": [
+        780,
+        225
+      ],
+      "size": [
+        150,
+        70
+      ]
+    },
+    {
+      "id": "jwt",
+      "type": "security",
+      "label": "SimpleJWT",
+      "sublabel": "Access 1h / refresh 30d",
+      "sources": [
+        {
+          "path": "services/lichess_chat_enhanced/lichess_chat_enhanced/settings.py",
+          "line": 138
+        }
+      ],
+      "pos": [
+        780,
+        400
+      ],
+      "size": [
+        150,
+        70
+      ]
+    },
+    {
+      "id": "packs",
+      "type": "backend",
+      "label": "Emoji packs API",
+      "sublabel": "free / store / acquire",
+      "sources": [
+        {
+          "path": "services/lichess_chat_enhanced/emojis/views.py"
+        }
+      ],
+      "pos": [
+        780,
+        50
+      ],
+      "size": [
+        150,
+        70
+      ]
+    },
+    {
+      "id": "media",
+      "type": "cloud",
+      "label": "MEDIA_ROOT",
+      "sublabel": "PNG y Lottie JSON",
+      "sources": [
+        {
+          "path": "services/lichess_chat_enhanced/lichess_chat_enhanced/settings.py",
+          "line": 111
+        }
+      ],
+      "pos": [
+        1060,
+        50
+      ],
+      "size": [
+        150,
+        70
+      ]
+    },
+    {
+      "id": "sqlite",
+      "type": "database",
+      "label": "SQLite",
+      "sublabel": "packs, emojis, usuarios",
+      "sources": [
+        {
+          "path": "services/lichess_chat_enhanced/lichess_chat_enhanced/settings.py",
+          "line": 88
+        }
+      ],
+      "pos": [
+        1060,
+        225
+      ],
+      "size": [
+        150,
+        70
+      ]
+    },
+    {
+      "id": "admin",
+      "type": "frontend",
+      "label": "Django admin",
+      "sublabel": "Gestión de packs",
+      "sources": [
+        {
+          "path": "services/lichess_chat_enhanced/lichess_chat_enhanced/urls.py",
+          "line": 9
+        }
+      ],
+      "pos": [
+        1060,
+        400
+      ],
+      "size": [
+        150,
+        70
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Extensión Chrome MV3",
+      "wraps": [
+        "content",
+        "background",
+        "popup",
+        "storage"
+      ],
+      "pad": 22
+    },
+    {
+      "kind": "security-group",
+      "label": "Servicio Django local",
+      "wraps": [
+        "api",
+        "packs",
+        "jwt",
+        "sqlite",
+        "media",
+        "admin"
+      ],
+      "pad": 22
+    }
+  ],
+  "connections": [
+    {
+      "id": "lichess-to-content",
+      "from": "lichess",
+      "to": "content",
+      "label": "DOM del chat",
+      "variant": "emphasis"
+    },
+    {
+      "id": "content-to-background",
+      "from": "content",
+      "to": "background",
+      "label": "catálogo + Lottie"
+    },
+    {
+      "id": "background-to-packs",
+      "from": "background",
+      "to": "packs",
+      "label": "HTTP + Bearer"
+    },
+    {
+      "id": "popup-to-storage",
+      "from": "popup",
+      "to": "storage",
+      "label": "access / refresh"
+    },
+    {
+      "id": "storage-to-api",
+      "from": "storage",
+      "to": "api",
+      "label": "Authorization: Bearer"
+    },
+    {
+      "id": "api-to-packs",
+      "from": "api",
+      "to": "packs",
+      "label": "enruta"
+    },
+    {
+      "id": "packs-to-media",
+      "from": "packs",
+      "to": "media",
+      "label": "image URL"
+    },
+    {
+      "id": "packs-to-sqlite",
+      "from": "packs",
+      "to": "sqlite",
+      "label": "ORM"
+    },
+    {
+      "id": "api-to-jwt",
+      "from": "api",
+      "to": "jwt",
+      "label": " autentica",
+      "labelAt": [
+        855,
+        345
+      ]
+    },
+    {
+      "id": "jwt-to-sqlite",
+      "from": "jwt",
+      "to": "sqlite",
+      "label": "users"
+    },
+    {
+      "id": "admin-to-sqlite",
+      "from": "admin",
+      "to": "sqlite",
+      "label": "ORM"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Estado actual (commit 5f2f9ca)",
+      "items": [
+        "Solo backend + extensión: sin tests, sin README, sin CI",
+        "Adquirir pack es gratis: no hay pagos implementados",
+        "DEBUG=True, SECRET_KEY en el repo y CORS_ALLOW_ALL_ORIGINS=True"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Dónde mirar al retomar",
+      "items": [
+        "Las imágenes estáticas se convierten a data URI por el mixed content HTTPS",
+        "Los Lottie animados se piden como JSON al service worker",
+        "El refresh del access token vive solo en el cliente (sin blacklist)"
+      ]
+    }
+  ]
+}

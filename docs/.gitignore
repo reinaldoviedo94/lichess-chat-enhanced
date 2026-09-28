@@ -1,0 +1,5 @@
+# Sidecars produced by `archify visual-check` (screenshots + receipts).
+# They are evidence for a single authoring session, not source. Regenerate on demand.
+architecture.visual-check.json
+architecture.visual-check.html
+architecture.visual-check.*.png

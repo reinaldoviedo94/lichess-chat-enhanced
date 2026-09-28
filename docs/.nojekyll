@@ -1,0 +1,2 @@
+# The archify artifacts in this directory are published verbatim as a static site.
+# Without this file Jekyll would strip files/directories starting with "_" or ".".
