@@ -1,0 +1,89 @@
+<!doctype html>
+<!--
+  Harness that mimics lila's chat DOM so the real content script can be exercised
+  without a lichess login. Structure copied from lila:
+    modules/chat/src/main/ChatUi.scala            -> section.mchat, .mchat__tabs, .mchat__content
+    ui/lib/src/chat/renderChat.ts                 -> div(".mchat__content." + active.key)
+    ui/lib/src/chat/discussion.ts renderLine()    -> ol.mchat__messages > li > a + " " + span.text
+    ui/lib/src/chat/discussion.ts input('.mchat__say')  -> <input type=text maxlength=140>
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LCE harness — lila chat DOM</title>
+<style>
+  body { font: 14px system-ui, sans-serif; margin: 0; background: #16181d; color: #dfe3e8; }
+  .round__underchat { max-width: 42rem; margin: 2rem auto; }
+  .mchat { display: flex; flex-direction: column; height: 22rem; background: #262a31; border-radius: .5rem; }
+  .mchat__tabs { display: flex; }
+  .mchat__tab { background: #1f2229; color: #b7bec9; border: 0; padding: .5rem 1rem; }
+  .mchat__tab-active { color: #fff; }
+  .mchat__content { flex: 1; overflow-y: auto; padding: .5rem; }
+  .mchat__messages { list-style: none; margin: 0; padding: 0; }
+  .mchat__messages li { padding: .15rem 0; }
+  .mchat__messages li.me { background: #2e333c; }
+  .mchat__messages a { color: #7cc4fa; text-decoration: none; }
+  .mchat__form { display: flex; gap: .5rem; padding: .5rem; border-top: 1px solid #343943; }
+  .mchat__say { flex: 1; padding: .4rem .6rem; background: #14161a; color: #fff; border: 1px solid #3a4150; border-radius: .3rem; }
+  .mchat__send { padding: .4rem .9rem; }
+  .lce-picker { max-height: 14rem; overflow: auto; }
+</style>
+</head>
+<body>
+<div class="round__underchat">
+  <section class="mchat">
+    <div class="mchat__tabs nb_1" role="tablist">
+      <button class="mchat__tab discussion mchat__tab-active" role="tab"><span>Chat</span></button>
+    </div>
+    <div class="mchat__content discussion">
+      <ol class="mchat__messages chat-v-1" role="log" aria-live="polite">
+        <li><a href="/@/@lce_player_b" class="user-link">lce_player_b</a> <span class="text">hi there :smile:</span></li>
+        <li><a href="/@/@lce_player_a" class="user-link">lce_player_a</a> <span class="text">nice :bounce: and :nope_unknown:</span></li>
+        <li class="system">This is a system line, no emoji here.</li>
+      </ol>
+    </div>
+    <form class="mchat__form" onsubmit="return false">
+      <input class="mchat__say" type="text" maxlength="140" placeholder="Talk in chat" autocomplete="off">
+      <button class="mchat__send" type="button">Send</button>
+    </form>
+  </section>
+</div>
+
+<script>
+  // Emulates lila appending incoming lines: the content script's MutationObserver
+  // is the only thing that can notice these, exactly like a real message arriving.
+  window.__who = 'you';
+  const list = document.querySelector('.mchat__messages');
+  const input = document.querySelector('.mchat__say');
+  const other = window.__who === 'you' ? 'lce_player_b' : 'lce_player_a';
+
+  function appendLine(user, text, cls) {
+    const li = document.createElement('li');
+    if (cls) li.className = cls;
+    const a = document.createElement('a');
+    a.href = '/@/@' + user;
+    a.className = 'user-link';
+    a.textContent = user;
+    const span = document.createElement('span');
+    span.className = 'text';
+    span.textContent = text;
+    li.append(a, document.createTextNode(' '), span);
+    list.appendChild(li);
+    return li;
+  }
+
+  // Exposed so the test driver can simulate traffic without clicking around.
+  window.__receive = (text) => appendLine(other, text);
+  window.__sent = [];
+  window.__countLines = () => list.children.length;
+
+  document.querySelector('.mchat__send').addEventListener('click', () => {
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    window.__sent.push(text);
+    appendLine('me', text, 'me');
+  });
+</script>
+</body>
+</html>
