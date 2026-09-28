@@ -48,6 +48,8 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
+          # el pnpm-lock.yaml vive en el subdir de la extensión, no en la raíz
+          cache-dependency-path: clients/extensions/chrome/lichess-chat-enhanced/pnpm-lock.yaml
 
       - name: Tokens (contrato de diseño)
         run: pnpm tokens:check

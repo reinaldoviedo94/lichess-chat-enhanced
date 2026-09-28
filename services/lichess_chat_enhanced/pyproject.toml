@@ -11,3 +11,10 @@ dependencies = [
     "pillow>=12.1.1",
     "gunicorn>=23.0.0",
 ]
+
+# Descubrimiento de paquetes explícito: el flat-layout de setuptools falla
+# porque docker/, templates/ y media/ parecen top-level packages. Solo
+# accounts, emojis y lichess_chat_enhanced son paquetes reales (con __init__).
+[tool.setuptools.packages.find]
+include = ["lichess_chat_enhanced*", "accounts*", "emojis*"]
+exclude = ["docker*", "templates*", "media*"]
