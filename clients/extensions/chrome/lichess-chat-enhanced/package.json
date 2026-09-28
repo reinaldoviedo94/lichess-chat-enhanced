@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "webpack --watch --mode development",
     "build": "webpack --mode production",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "tokens": "node ../../../../scripts/tokens-to-css.mjs",
+    "tokens:check": "node ../../../../scripts/tokens-to-css.mjs --check",
+    "test:lifecycle": "pnpm build && node e2e/lifecycle.test.mjs"
   },
   "author": "Reinaldo Oviedo Linares <reinaldoviedo94@gmail.com>",
   "packageManager": "pnpm@10.30.1",

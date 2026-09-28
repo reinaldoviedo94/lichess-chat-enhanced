@@ -130,6 +130,15 @@ jobs:
             umask 077
             cd ${{ env.DEPLOY_PATH }}
             mkdir -p extension
+
+            # scp-action nests flat /tmp sources into target/tmp; flatten so
+            # the bind mount at ./extension:/extension:ro sees the files.
+            if [ -d extension/tmp ] && [ -z "$(command ls -A extension 2>/dev/null | grep -xv tmp)" ]; then
+              mv extension/tmp/* extension/ 2>/dev/null || true
+              rmdir extension/tmp 2>/dev/null || true
+            fi
+            test -f extension/lichess-chat-enhanced.zip && test -f extension/manifest.json \
+              && echo "extension bundle present" || echo "WARN: extension bundle missing"
             cat > .env << EOF
             APP_VERSION=$APP_VERSION
             DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}

@@ -41,26 +41,28 @@ const CATALOG = {
   userPacks: [],
 };
 
-function chromeStub() {
-  const listeners = new Set();
-  const chrome = {
-    runtime: {
-      onMessage: {
-        addListener: (fn) => listeners.add(fn),
-        _fire: (message) => listeners.forEach((fn) => fn(message)),
-      },
-      sendMessage: (type, payload, cb) => {
-        if (typeof payload === 'function') cb = payload;
-        if (type === 'GET_EMOJI_CATALOG') cb(CATALOG);
-        else if (type === 'FETCH_JSON') cb(null);
-        else cb({ ok: true });
-      },
-    },
-    __listeners: listeners,
-  };
-  window.chrome = chrome;
-  // Algunos módulos hacen `chrome.runtime?.sendMessage(...)` en el arranque; dejar disponible.
-  window.__fireReload = () => chrome.runtime.onMessage._fire({ type: 'RELOAD_EMOJIS' });
+function chromeStubSource(cat) {
+  // Se inyecta como `var chrome = ...` delante del bundle: Chrome define `window.chrome` como
+  // propiedad de solo-lectura, así que `window.chrome = {...}` en un init script no creaba la
+  // binding `chrome` que el content script usa. Con `var chrome` en el ámbito global funciona.
+  const stub = `
+    var chrome = (function () {
+      var listeners = new Set();
+      var cat = ${JSON.stringify(cat)};
+      return {
+        runtime: {
+          onMessage: { addListener: function (f) { listeners.add(f); } },
+          sendMessage: function (msg, payload, cb) {
+            if (typeof payload === 'function') cb = payload;
+            if (msg && msg.type === 'GET_EMOJI_CATALOG') cb(cat);
+            else if (msg && msg.type === 'FETCH_JSON') cb(null);
+            else cb({ ok: true });
+          }
+        }
+      };
+    })();
+  `;
+  return stub;
 }
 
 const HARNESS_BODY = `<!doctype html><html><body>
@@ -111,17 +113,19 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function main() {
   const browser = await playwright.chromium.launch();
   const page = await browser.newPage();
-  const contentSrc = await readFile(resolve(EXT_DIST, 'content.js'), 'utf8');
 
-  await page.addInitScript(chromeStub);
   await page.setContent(HARNESS_BODY);
-  await page.addScriptTag({ content: contentSrc });
+  const contentSrc = await readFile(resolve(EXT_DIST, 'content.js'), 'utf8');
+  await page.addScriptTag({ content: chromeStubSource(CATALOG) + '\n' + contentSrc });
 
   // Esperar el montaje inicial (catalog -> syncMount).
-  await page.waitForSelector('.lce-emoji-btn', { timeout: 4000 });
+  await page.waitForSelector('.lce-emoji-btn', { state: 'attached', timeout: 4000 });
   await sleep(150); // margen para el transform inicial
 
   // A) Montaje inicial: un solo botón, input envuelto, mensaje transformado.
+  // B: se reutiliza antes para esperar la 1ª transformación (los imgs del boot).
+  await page.waitForSelector('.mchat__content img.lce-emoji-img', { state: 'attached', timeout: 3000 });
+
   const a = await page.evaluate(() => ({
     buttons: document.querySelectorAll('.lce-emoji-btn').length,
     wrapped: !!document.querySelector('input.mchat__say')?.closest('.lce-input-wrapper'),
@@ -133,13 +137,15 @@ async function main() {
   assert('A mount inicial: :smile: transformado', a.smileImg);
   assert('A mount inicial: aria-expanded=false', a.expanded === 'false');
 
-  // B) Mensaje entrante tras el boot sigue transformándose.
+  // B) Mensaje entrante tras el boot sigue transformándose (buscar el <img>, no solo el texto).
   await page.evaluate(() => window.__receive('hi :smile: again'));
   await sleep(250); // transform debounce 100ms
-  const b = await page.evaluate(() =>
-    [...document.querySelectorAll('.mchat__messages li .text')].filter((t) => t.textContent.includes('again')).length
-  );
-  assert('B mensaje nuevo se transforma', b === 1);
+  const b = await page.evaluate(() => {
+    const lines = [...document.querySelectorAll('.mchat__messages li')];
+    const last = lines[lines.length - 1];
+    return { imgs: last.querySelectorAll('img.lce-emoji-img').length, hasText: last.textContent.includes('again') };
+  });
+  assert('B mensaje nuevo se transforma', b.hasText && b.imgs === 1, `imgs=${b.imgs}`);
 
   // C) RE-RENDER de lila: reemplaza contenido + input. El botón NO debe duplicarse y el
   //    contenido nuevo debe quedar montado y transformado. (regresión principal)

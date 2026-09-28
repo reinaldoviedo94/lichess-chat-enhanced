@@ -1,6 +1,11 @@
 # ToolJet en este repo — runbook
 
-Runbook operativo del plano ToolJet (prototipo, consola de packs, puente de tokens).
+> ⚠️ **ARCHIVADO (2026-09-27).** ToolJet quedó descartado: la instancia local corría una licencia
+> inválida que bloqueaba `customThemesEnabled` (la feature del puente de tokens) y se abandonó la
+> automatización vía MCP. Este documento se conserva como apunte del porqué y de lo que se probó;
+> no refleja el estado activo. El trabajo de UX/UI sigue en la ruta nativa (ver README).
+
+Runbook operativo del plano ToolJet (*era: prototipo, consola de packs, puente de tokens*).
 La **spec** con las decisiones de diseño está en [`specs/ux-ui-tooljet.md`](specs/ux-ui-tooljet.md).
 El diagrama del plano está en [`tooljet.html`](tooljet.html) (spec: [`tooljet.json`](tooljet.json)).
 

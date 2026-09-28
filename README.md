@@ -4,8 +4,10 @@ Extensión de Chrome (MV3) + servicio Django que agrega **emojis y packs de stic
 
 - **URL del diagrama (verdad canónica):** <https://reinaldoviedo94.github.io/lichess-chat-enhanced/architecture.html>
 - **Spec del diagrama:** [`docs/architecture.json`](docs/architecture.json)
-- **Plano ToolJet (diseño y operación):** [`docs/tooljet.html`](docs/tooljet.html) · spec [`docs/tooljet.json`](docs/tooljet.json)
-- **Índice de los dos diagramas:** <https://reinaldoviedo94.github.io/lichess-chat-enhanced/>
+- **Índice de diagramas:** <https://reinaldoviedo94.github.io/lichess-chat-enhanced/>
+
+> El diagrama del plano ToolJet (`docs/tooljet.html`) quedó **archivado** por la decisión de
+> descartar ToolJet; ya no está en el índice.
 
 Hay dos diagramas, con el mismo nivel de autoridad:
 
